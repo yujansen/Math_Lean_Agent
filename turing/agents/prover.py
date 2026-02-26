@@ -54,6 +54,136 @@ PROVER_SYSTEM_PROMPT = """你是 Prover，Turing 数学研究团队中的 Lean 4
     - 仅在以上全部失败时使用 induction
     - 归纳中每个分支也优先用 simp/omega/ring 关闭
 
+========================================
+  各数学分支的 Mathlib API 快速参考
+========================================
+
+【测度论 MeasureTheory】
+  - import Mathlib.MeasureTheory.Measure.MeasureSpace
+  - open MeasureTheory
+  - MeasurableSet, MeasurableSpace, Measure, Volume
+  - measure_empty, measure_univ, MeasurableSet.univ, MeasurableSet.empty
+  - MeasurableSet.compl, MeasurableSet.union, MeasurableSet.inter
+  - 证明可测集: exact MeasurableSet.univ / exact MeasurableSet.empty
+
+【概率论 Probability】
+  - import Mathlib.Probability.ProbabilityMassFunction.Basic
+  - import Mathlib.MeasureTheory.Measure.MeasureSpace
+  - open MeasureTheory ProbabilityTheory
+  - IsProbabilityMeasure, measure_univ (= 1), measure_empty (= 0)
+  - Measure.mono (单调性), measure_le_one
+  - 对概率测度: 声明 [IsProbabilityMeasure μ]，用 measure_univ 证明 μ Set.univ = 1
+
+【几何学 Geometry / 凸性】
+  - import Mathlib.Analysis.Convex.Basic
+  - import Mathlib.Analysis.InnerProductSpace.Basic
+  - open Convex
+  - Convex ℝ s, convex_empty, convex_univ, Convex.inter
+  - @inner_mul_le_norm_mul_sq (柯西-施瓦茨), abs_inner_le_norm
+
+【范畴论 CategoryTheory】
+  - import Mathlib.CategoryTheory.Category.Basic
+  - import Mathlib.CategoryTheory.Functor.Basic
+  - open CategoryTheory
+  - Category.id_comp, Category.comp_id, Category.assoc
+  - Functor.map_id, Functor.map_comp
+  - 态射复合用 ≫，恒等用 𝟙
+  - 对象类型用 X : C（C 是范畴）
+
+【代数几何 AlgebraicGeometry】
+  - import Mathlib.RingTheory.Ideal.Basic
+  - import Mathlib.RingTheory.Ideal.Maximal
+  - import Mathlib.RingTheory.LocalRing
+  - LocalRing.maximal_ideal_unique, Ideal.IsPrime, Ideal.IsMaximal
+  - Ideal.IsMaximal.isPrime (极大 → 素)
+  - bot_prime (零理想是素理想，在整环中)
+  - RingHom.ker_isIdeal (环同态的核是理想)
+
+【代数拓扑 AlgebraicTopology】
+  - import Mathlib.Topology.Homotopy.Basic
+  - import Mathlib.Topology.Connected.PathConnected
+  - ContinuousMap.Homotopy, HomotopyEquiv
+  - isPathConnected_iff_connectedSpace
+  - ContinuousMap.Homotopy.refl (同伦自反), .symm (对称)
+  - IsContractible (可缩空间), isPathConnected_of_isContractible
+
+【线性代数 LinearAlgebra】
+  - import Mathlib.LinearAlgebra.Basic
+  - import Mathlib.Data.Matrix.Basic
+  - LinearMap.map_zero, LinearMap.map_add, LinearMap.map_smul
+  - one_smul, zero_smul, smul_zero
+  - Matrix.transpose_transpose
+  - LinearMap.comp (线性映射复合)
+
+【群论 GroupTheory】
+  - import Mathlib.GroupTheory.Subgroup.Basic
+  - import Mathlib.GroupTheory.Abelianization
+  - MonoidHom.map_one, MonoidHom.map_inv, MonoidHom.map_mul
+  - Subgroup.one_mem (子群包含单位元)
+  - Subgroup.Normal (正规子群)
+  - CommGroup → 所有子群正规: Subgroup.normal_of_comm
+  - orderOf_inv (g 的阶 = g⁻¹ 的阶)
+
+【环论 RingTheory】
+  - import Mathlib.RingTheory.Ideal.Basic
+  - import Mathlib.Algebra.Ring.Basic
+  - mul_comm, add_comm, neg_mul, mul_neg
+  - NoZeroDivisors (整环判定), eq_zero_or_eq_zero_of_mul_eq_zero
+  - Ideal.IsMaximal.isPrime
+  - 幂零元: IsNilpotent, isUnit_one_add_of_isNilpotent (1 + 幂零 = 可逆)
+
+【域论 FieldTheory】
+  - import Mathlib.FieldTheory.Basic
+  - import Mathlib.FieldTheory.Finite.Basic
+  - CharP.char_is_prime_or_zero (特征是 0 或素数)
+  - CharZero (特征零), charP_zero_iff
+  - Field → IsDomain (域是整环)
+  - inv_mul_cancel, mul_inv_cancel
+  - Fintype.card_eq_prime_pow (有限域的阶是素数幂)
+
+【可计算性 Computability】
+  - import Mathlib.Computability.Primrec
+  - import Mathlib.Computability.DFA
+  - Primrec.zero, Primrec.succ, Primrec.comp
+  - DFA.AcceptsLanguage, DFA.complement
+  - NFA.toDFA (NFA → DFA 转换)
+
+【动力系统 Dynamics】
+  - import Mathlib.Dynamics.FixedPoints.Basic
+  - import Mathlib.Dynamics.PeriodicPts
+  - Function.IsFixedPt, Function.fixedPoints
+  - Function.IsPeriodicPt, isFixedPt_iff_isPeriodicPt_one
+  - Function.IsFixedPt.isPeriodicPt
+
+【模型论 ModelTheory】
+  - import Mathlib.ModelTheory.Basic
+  - import Mathlib.ModelTheory.Substructures
+  - FirstOrder.Language.Structure
+  - Substructure, Embedding, Equiv
+  - Equiv.symm (同构对称), Equiv.trans (同构传递)
+
+【信息论 InformationTheory】
+  - import Mathlib.Combinatorics.SimpleGraph.Hamming
+  - hammingDist, hammingDist_self, hammingDist_comm
+  - hammingDist_triangle, hammingDist_nonneg
+  - hammingDist_eq_zero (距离 0 则相等)
+  注意: Mathlib 中汉明距离用 hammingDist 而非 hamming_dist
+
+【凝聚数学 Condensed】
+  - import Mathlib.Condensed.Basic
+  - import Mathlib.Condensed.Discrete
+  - CondensedSet, CondensedAb (凝聚阿贝尔群)
+  - Condensed.discrete (离散化函子)
+  - 凝聚范畴的性质需要 Sites/Sheaves 理论
+
+【表示论 RepresentationTheory】
+  - import Mathlib.RepresentationTheory.Basic
+  - import Mathlib.RepresentationTheory.Maschke
+  - Representation, FDRep
+  - Rep.trivial (平凡表示)
+  - Maschke's theorem: Action.completelyReducible
+  - SchurLemma: 不可约表示间的非零同态是同构
+
 输出格式（严格遵守）：
 ```lean
 import Mathlib
@@ -64,6 +194,7 @@ theorem <name> : <statement> := by
 
 关键注意事项：
 - 始终 `import Mathlib`
+- 需要时用 open 打开命名空间（如 open MeasureTheory / open CategoryTheory）
 - 证明越短越好，一行能解决的绝不写两行
 - 不要在 by 块中写 sorry
 - 如果 simp/omega/ring 能直接解决，就不要用 intro/induction
@@ -105,10 +236,12 @@ class ProverAgent(BaseAgent):
             kwargs:
                 - theorem_name: 定理名称
                 - hints: 额外提示
+                - theorem_toolkit: 已证明定理工具箱（可直接引用的定理列表）
                 - max_attempts: 最大尝试次数
         """
         theorem_name = kwargs.get("theorem_name", "main_theorem")
         hints = kwargs.get("hints", "")
+        theorem_toolkit = kwargs.get("theorem_toolkit", "")
         max_attempts = kwargs.get("max_attempts", 5)
 
         logger.info(f"[Prover] 开始证明: {task[:100]}...")
@@ -116,7 +249,7 @@ class ProverAgent(BaseAgent):
         # 1. 搜索相关的已有策略和定理
         context = ""
         if self.ltm:
-            related = self.ltm.search(task, top_k=3)
+            related = self.ltm.search(task, top_k=5)
             if related:
                 context = "相关已知知识:\n"
                 for r in related:
@@ -124,7 +257,12 @@ class ProverAgent(BaseAgent):
                     if r.get("lean_code"):
                         context += f"  Lean: {r.get('lean_code', '')[:200]}\n"
 
-        # 2. 生成初始 Lean 代码
+        # 2. 注入已证明定理工具箱
+        toolkit_section = ""
+        if theorem_toolkit:
+            toolkit_section = f"\n{theorem_toolkit}\n"
+
+        # 3. 生成初始 Lean 代码
         prompt = f"""请将以下数学命题形式化为 Lean 4 代码并完成证明。
 
 命题: {task}
@@ -132,14 +270,16 @@ class ProverAgent(BaseAgent):
 
 {f'提示: {hints}' if hints else ''}
 {context}
+{toolkit_section}
 
 ⚠️ 策略要求（必须遵守）：
 1. 必须 `import Mathlib`
-2. 先尝试一行自动化 tactic（按顺序：simp, omega, ring, norm_num, decide, exact?, aesop）
-3. 如果一行 tactic 不够，尝试直接引用 Mathlib 定理（如 exact Nat.add_comm ..）
-4. 仅在以上全部失败时才使用 induction，且归纳分支内也优先用 simp/omega
-5. 绝对不要在证明目标已解决后添加多余的 tactic 行
-6. 证明越短越好
+2. 需要时用 open 打开命名空间（如 open MeasureTheory / open CategoryTheory）
+3. 先尝试一行自动化 tactic（按顺序：simp, omega, ring, norm_num, decide, exact?, aesop）
+4. 如果一行 tactic 不够，尝试直接引用 Mathlib 定理（如 exact Nat.add_comm ..）
+5. 仅在以上全部失败时才使用 induction，且归纳分支内也优先用 simp/omega
+6. 绝对不要在证明目标已解决后添加多余的 tactic 行
+7. 证明越短越好
 
 请给出完整的 Lean 4 代码。代码用 ```lean 和 ``` 包围。"""
 

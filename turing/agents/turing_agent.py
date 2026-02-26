@@ -257,8 +257,9 @@ RAM: {snapshot.ram_free_gb:.1f}GB / {snapshot.ram_total_gb:.1f}GB
         task_type = await self._classify_task(task)
         self.working_memory.problem_type = task_type
 
-        # 2. 记忆检索
-        context = await self._retrieve_context(task)
+        # 2. 记忆检索（含跨分支已证定理）
+        area = kwargs.get("area", "")
+        context = await self._retrieve_context(task, area=area)
         self.working_memory.inject_context(context)
 
         # 3. 获取策略建议
@@ -273,6 +274,7 @@ RAM: {snapshot.ram_free_gb:.1f}GB / {snapshot.ram_total_gb:.1f}GB
 
         # 6. 记录经验
         duration = time.time() - start_time
+        result["area"] = area  # 确保记录实际数学分支
         await self._record_outcome(task, task_type, result, duration, plan)
 
         # 7. 评估结果
@@ -322,13 +324,23 @@ explore（探索概念）| organize（整理知识）
                 return t
         return "prove"
 
-    async def _retrieve_context(self, task: str) -> list[dict]:
-        """从长期记忆检索相关上下文。"""
+    async def _retrieve_context(self, task: str, area: str = "") -> list[dict]:
+        """从长期记忆检索相关上下文，包括跨分支已证定理。"""
         context = []
 
-        # 检索相关定理
-        theorems = self.ltm.search(task, top_k=3, type_filter="theorem")
+        # 检索语义相关的定理
+        theorems = self.ltm.search(task, top_k=5, type_filter="theorem")
         context.extend(theorems)
+
+        # 跨分支已证定理复用
+        if area:
+            cross_branch = self.ltm.get_cross_branch_theorems(area, limit=10)
+            for thm in cross_branch:
+                # 避免重复
+                if not any(c.get("id") == thm["id"] for c in context):
+                    thm["type"] = "proven_theorem"
+                    thm["similarity"] = 0.8  # 标记为已证定理
+                    context.append(thm)
 
         # 检索相关策略
         tactics = self.ltm.search(task, top_k=2, type_filter="tactic")
@@ -402,17 +414,54 @@ explore（探索概念）| organize（整理知识）
         else:
             return await self._execute_proof(task, plan, **kwargs)
 
+    def _build_theorem_toolkit(self, area: str = "") -> str:
+        """构建已证定理工具箱，供 Prover 作为可用引理参考。"""
+        if not area:
+            return ""
+
+        theorems = self.ltm.get_cross_branch_theorems(area, limit=15)
+        if not theorems:
+            return ""
+
+        lines = ["\n📚 已证定理工具箱（你可以在证明中直接引用这些定理的 Lean 名称）："]
+        for thm in theorems:
+            name = thm.get("theorem_name", "")
+            desc = thm.get("description", thm.get("natural_language", ""))[:80]
+            lean = thm.get("lean_code", "")
+            thm_area = thm.get("area", "")
+            if name and lean:
+                # 提取 theorem 声明行
+                for line in lean.split("\n"):
+                    if line.strip().startswith(("theorem", "lemma", "example")):
+                        lines.append(f"  • [{thm_area}] {name}: {line.strip()[:120]}")
+                        break
+                else:
+                    lines.append(f"  • [{thm_area}] {name}: {desc}")
+
+        if len(lines) <= 1:
+            return ""
+        return "\n".join(lines)
+
     async def _execute_proof(self, task: str, plan: str, **kwargs) -> dict:
         """执行证明任务。"""
+        area = kwargs.get("area", "")
+
+        # 构建已证定理工具箱
+        theorem_toolkit = self._build_theorem_toolkit(area)
 
         # 第一步：生成自然语言证明思路
         step = self.working_memory.add_step("生成证明思路")
         wm_context = self.working_memory.export_context()
 
+        toolkit_hint = ""
+        if theorem_toolkit:
+            toolkit_hint = f"\n\n{theorem_toolkit}\n提示：如果已证定理中有可以直接使用的引理，请优先用 exact/apply 引用它们。"
+
         nl_proof = await self.think_with_context(
             f"请给出以下命题的自然语言证明思路（不需要 Lean 代码）：\n\n{task}\n\n"
             f"提示：优先考虑是否可以用 Lean 的 simp/omega/ring/norm_num 等自动化 tactic 一步解决。"
-            f"只有这些都不行时才考虑手动归纳或分步证明。",
+            f"只有这些都不行时才考虑手动归纳或分步证明。"
+            f"{toolkit_hint}",
             context=wm_context,
         )
         self.working_memory.update_step(step.id, status=StepStatus.VERIFIED, content=nl_proof)
@@ -429,6 +478,7 @@ explore（探索概念）| organize（整理知识）
                 task,
                 theorem_name=kwargs.get("theorem_name", "main_theorem"),
                 hints=nl_proof,
+                theorem_toolkit=theorem_toolkit,
                 max_attempts=self._turing_config.lean.max_retries,
             )
             await self.factory.destroy(prover.agent_id)

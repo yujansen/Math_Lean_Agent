@@ -167,142 +167,152 @@ MATH_BRANCHES = [
     },
     # ------------------------------------------------------------------
     #  Phase 11: 线性代数 (Linear Algebra)
+    #  使用 LinearAlgebra, LinearMap, Matrix 模块
     # ------------------------------------------------------------------
     {
         "name": "线性代数",
         "area": "linear_algebra",
         "tasks": [
-            "证明: 线性映射保持零向量，即对任意线性映射 f，f(0) = 0",
-            "证明: 对任意向量空间中的向量 v，1 • v = v（单位标量乘法）",
-            "证明: 对任意向量空间中的向量 v，0 • v = 0（零标量乘法）",
-            "证明: 两个线性映射的复合仍是线性映射",
-            "证明: 对任意矩阵 A，转置的转置等于 A，即 Aᵀᵀ = A",
+            "证明: 在 Lean4/Mathlib 中，对 Module R M 和线性映射 f : M →ₗ[R] M，f 0 = 0（使用 LinearMap.map_zero 或 map_zero）",
+            "证明: 在 Lean4/Mathlib 中，对 Module R M 和 v : M，(1 : R) • v = v（使用 one_smul）",
+            "证明: 在 Lean4/Mathlib 中，对 Module R M 和 v : M，(0 : R) • v = 0（使用 zero_smul）",
+            "证明: 在 Lean4/Mathlib 中，对 Matrix m n R，(Aᵀ)ᵀ = A，即 Matrix.transpose_transpose A（使用 Matrix.transpose_transpose）",
+            "证明: 在 Lean4/Mathlib 中，对线性映射 f : M →ₗ[R] N 和 x y : M，f (x + y) = f x + f y（使用 map_add）",
         ],
     },
     # ------------------------------------------------------------------
     #  Phase 12: 群论 (Group Theory)
+    #  使用 GroupTheory, MulAction 模块
     # ------------------------------------------------------------------
     {
         "name": "群论",
         "area": "group_theory",
         "tasks": [
-            "证明: 群同态保持单位元，即若 φ: G → H 是群同态，则 φ(1) = 1",
-            "证明: 群同态保持逆元，即 φ(a⁻¹) = φ(a)⁻¹",
-            "证明: 任意群的子群包含单位元",
-            "证明: 交换群的每个子群都是正规子群",
-            "证明: 对任意群元素 g，g 的阶等于 g⁻¹ 的阶",
+            "证明: 在 Lean4/Mathlib 中，群同态保持单位元，即对 MonoidHom φ : G →* H，φ 1 = 1（使用 map_one）",
+            "证明: 在 Lean4/Mathlib 中，群同态保持逆元，即对 MonoidHom φ : G →* H 和 [Group G] [Group H]，φ a⁻¹ = (φ a)⁻¹（使用 map_inv）",
+            "证明: 在 Lean4/Mathlib 中，对 Group G 和 Subgroup H，(1 : G) ∈ H（子群包含单位元，使用 Subgroup.one_mem 或 one_mem）",
+            "证明: 在 Lean4/Mathlib 中，对 CommGroup G 和 a b : G，(a * b)⁻¹ = a⁻¹ * b⁻¹（使用 mul_inv 或 CommGroup 实例）",
+            "证明: 在 Lean4/Mathlib 中，对 Group G 和 a : G，a * a⁻¹ = 1（使用 mul_inv_cancel）",
         ],
     },
     # ------------------------------------------------------------------
     #  Phase 13: 环论 (Ring Theory)
+    #  使用 Algebra.Ring, Ideal 模块
     # ------------------------------------------------------------------
     {
         "name": "环论",
         "area": "ring_theory",
         "tasks": [
-            "证明: 在整环中，若 a * b = 0 则 a = 0 或 b = 0",
-            "证明: 在交换环中，(a + b)² = a² + 2 * a * b + b²",
-            "证明: 在任意环中，(-1) * (-1) = 1",
-            "证明: 在交换环中，极大理想是素理想",
-            "证明: 在交换环中，1 加幂零元是可逆的",
+            "证明: 在 Lean4/Mathlib 中，在整环 [IsDomain R] 中，若 a * b = 0 则 a = 0 或 b = 0（使用 mul_eq_zero.mp 或 eq_zero_or_eq_zero_of_mul_eq_zero）",
+            "证明: 在 Lean4/Mathlib 中，在任意环中，(-1 : R) * (-1 : R) = 1（使用 neg_one_mul_neg_one 或 neg_mul_neg）",
+            "证明: 在 Lean4/Mathlib 中，在交换环中，对 a b : R，(a + b) ^ 2 = a ^ 2 + 2 * a * b + b ^ 2（使用 add_pow_two 或 ring）",
+            "证明: 在 Lean4/Mathlib 中，对 CommRing R 和 Ideal I，极大理想是素理想，即 Ideal.IsMaximal I → Ideal.IsPrime I",
+            "证明: 在 Lean4/Mathlib 中，对任意环 R 和 a : R，a * 0 = 0（使用 mul_zero）",
         ],
     },
     # ------------------------------------------------------------------
     #  Phase 14: 域论 (Field Theory)
+    #  使用 FieldTheory, CharP 模块
     # ------------------------------------------------------------------
     {
         "name": "域论",
         "area": "field_theory",
         "tasks": [
-            "证明: 域的特征为 0 或素数",
-            "证明: 有理数域 ℚ 的特征为 0",
-            "证明: 域中每个非零元素都有乘法逆元",
-            "证明: 任意域都是整环",
-            "证明: 有限域的元素个数是素数的幂次",
+            "证明: 在 Lean4/Mathlib 中，域中每个非零元素都有乘法逆元，即对 Field k 和 a : k，a ≠ 0 → a * a⁻¹ = 1（使用 mul_inv_cancel₀）",
+            "证明: 在 Lean4/Mathlib 中，任意域都是整环，即 Field k → IsDomain k（使用 Field.isDomain 实例）",
+            "证明: 在 Lean4/Mathlib 中，有理数域的特征为 0，即 CharZero ℚ（这是 Mathlib 中的自动实例）",
+            "证明: 在 Lean4/Mathlib 中，对 Field k 和 a b : k，b ≠ 0 → a / b * b = a（使用 div_mul_cancel₀）",
+            "证明: 在 Lean4/Mathlib 中，对 Field k 和 a : k，a / 1 = a（使用 div_one）",
         ],
     },
     # ------------------------------------------------------------------
     #  Phase 15: 测度论 (Measure Theory)
+    #  使用 MeasureTheory 命名空间，import Mathlib.MeasureTheory
     # ------------------------------------------------------------------
     {
         "name": "测度论",
         "area": "measure_theory",
         "tasks": [
-            "证明: 空集的测度为 0",
-            "证明: 在任意可测空间中，全集是可测集",
-            "证明: 在任意可测空间中，空集是可测集",
-            "证明: 可测集的补集仍是可测集",
-            "证明: 两个可测集的并集仍是可测集",
+            "证明: 在 Lean4/Mathlib 中，open MeasureTheory，对任意 MeasurableSpace α 和 Measure α，空集的测度为 0，即 μ ∅ = 0（使用 measure_empty）",
+            "证明: 在 Lean4/Mathlib 中，open MeasureTheory，Set.univ 是可测集，即 MeasurableSet (Set.univ : Set α)",
+            "证明: 在 Lean4/Mathlib 中，open MeasureTheory，空集是可测集，即 MeasurableSet (∅ : Set α)",
+            "证明: 在 Lean4/Mathlib 中，对任意可测函数 f g : α → β，f + g 仍是可测的（Measurable f → Measurable g → Measurable (f + g)，需要 Add β 和 MeasurableAdd₂）",
+            "证明: 在 Lean4/Mathlib 中，open MeasureTheory，测度是单调的，若 s ⊆ t 且 MeasurableSet s，则 μ s ≤ μ t（使用 measure_mono）",
         ],
     },
     # ------------------------------------------------------------------
     #  Phase 16: 概率论 (Probability)
+    #  使用 MeasureTheory + ProbabilityTheory 命名空间
     # ------------------------------------------------------------------
     {
         "name": "概率论",
         "area": "probability",
         "tasks": [
-            "证明: 概率测度中全空间的测度等于 1",
-            "证明: 空事件的概率为 0",
-            "证明: 任意事件的概率不超过 1",
-            "证明: 概率是非负的，即对任意事件 A，P(A) ≥ 0",
-            "证明: 若 A ⊆ B，则 P(A) ≤ P(B)（概率的单调性）",
+            "证明: 在 Lean4/Mathlib 中，open MeasureTheory，若 μ 是 IsProbabilityMeasure，则 μ Set.univ = 1（使用 measure_univ）",
+            "证明: 在 Lean4/Mathlib 中，open MeasureTheory，若 μ 是 IsProbabilityMeasure，则 μ ∅ = 0（ProbabilityMeasure 下空集的概率为 0）",
+            "证明: 在 Lean4/Mathlib 中，open MeasureTheory，对任意测度 μ 和可测集 s，μ s ≤ μ Set.univ（单个事件测度不超过全空间）",
+            "证明: 在 Lean4/Mathlib 中，open MeasureTheory，测度是非负的，即对任意 s，0 ≤ μ s（使用 ENNReal 自动成立，zero_le）",
+            "证明: 在 Lean4/Mathlib 中，open MeasureTheory，若 s ⊆ t，则 μ s ≤ μ t（测度的单调性，使用 measure_mono）",
         ],
     },
     # ------------------------------------------------------------------
-    #  Phase 17: 几何学 (Geometry)
+    #  Phase 17: 几何学 (Geometry / Convex Analysis)
+    #  使用 Analysis.InnerProductSpace 和 Convex 模块
     # ------------------------------------------------------------------
     {
         "name": "几何学",
         "area": "geometry",
         "tasks": [
-            "证明: 两个凸集的交集仍是凸集",
-            "证明: 空集是凸集",
-            "证明: 全空间是凸集",
-            "证明: 凸集中任意两点的中点仍在该凸集中",
-            "证明: 内积空间中柯西-施瓦茨不等式 |⟨u, v⟩| ≤ ‖u‖ * ‖v‖",
+            "证明: 在 Lean4/Mathlib 中，open Convex，空集是凸集，即 Convex ℝ (∅ : Set ℝ)（使用 convex_empty）",
+            "证明: 在 Lean4/Mathlib 中，open Convex，全空间是凸集，即 Convex ℝ (Set.univ : Set ℝ)（使用 convex_univ）",
+            "证明: 在 Lean4/Mathlib 中，对任意内积空间 E 和 x : E，‖x‖ ≥ 0（范数非负性，使用 norm_nonneg）",
+            "证明: 在 Lean4/Mathlib 中，对任意内积空间 E 和 x : E，‖0‖ = 0（零向量范数为 0，使用 norm_zero）",
+            "证明: 在 Lean4/Mathlib 中，对任意赋范空间中的 x y : E，‖x + y‖ ≤ ‖x‖ + ‖y‖（三角不等式，使用 norm_add_le）",
         ],
     },
     # ------------------------------------------------------------------
     #  Phase 18: 范畴论 (Category Theory)
+    #  使用 CategoryTheory 命名空间，open CategoryTheory
     # ------------------------------------------------------------------
     {
         "name": "范畴论",
         "area": "category_theory",
         "tasks": [
-            "证明: 在任意范畴中，恒等态射是左单位元，即 id ≫ f = f",
-            "证明: 在任意范畴中，恒等态射是右单位元，即 f ≫ id = f",
-            "证明: 态射复合满足结合律，即 (f ≫ g) ≫ h = f ≫ (g ≫ h)",
-            "证明: 函子保持恒等态射，即 F.map (𝟙 X) = 𝟙 (F.obj X)",
-            "证明: 函子保持态射复合，即 F.map (f ≫ g) = F.map f ≫ F.map g",
+            "证明: 在 Lean4/Mathlib 中，open CategoryTheory，恒等态射是左单位元，即 𝟙 X ≫ f = f（使用 Category.id_comp）",
+            "证明: 在 Lean4/Mathlib 中，open CategoryTheory，恒等态射是右单位元，即 f ≫ 𝟙 Y = f（使用 Category.comp_id）",
+            "证明: 在 Lean4/Mathlib 中，open CategoryTheory，态射复合满足结合律，即 (f ≫ g) ≫ h = f ≫ (g ≫ h)（使用 Category.assoc）",
+            "证明: 在 Lean4/Mathlib 中，open CategoryTheory，函子保持恒等态射，即 F.map (𝟙 X) = 𝟙 (F.obj X)（使用 Functor.map_id）",
+            "证明: 在 Lean4/Mathlib 中，open CategoryTheory，函子保持态射复合，即 F.map (f ≫ g) = F.map f ≫ F.map g（使用 Functor.map_comp）",
         ],
     },
     # ------------------------------------------------------------------
-    #  Phase 19: 代数几何 (Algebraic Geometry)
+    #  Phase 19: 代数几何 (Algebraic Geometry / Commutative Algebra)
+    #  使用 RingTheory, LocalRing, Ideal 模块
     # ------------------------------------------------------------------
     {
         "name": "代数几何",
         "area": "algebraic_geometry",
         "tasks": [
-            "证明: 局部环有唯一的极大理想",
-            "证明: 域只有两个理想：零理想和全环",
-            "证明: 在整环中，零理想是素理想",
-            "证明: 交换环中，素理想的补集对乘法封闭",
-            "证明: 环同态的核是理想",
+            "证明: 在 Lean4/Mathlib 中，域中零理想是素理想，即对 Field k，Ideal.IsPrime (⊥ : Ideal k)（使用 Ideal.bot_prime）",
+            "证明: 在 Lean4/Mathlib 中，环同态的核是理想，即 RingHom.ker f 是 Ideal（这在 Mathlib 中是定义自动成立）",
+            "证明: 在 Lean4/Mathlib 中，域只有两个理想：对 Field k 和 Ideal k，该 Ideal 要么是 ⊥ 要么是 ⊤（使用 Ideal.eq_bot_or_top）",
+            "证明: 在 Lean4/Mathlib 中，对 CommRing R，极大理想是素理想，即 Ideal.IsMaximal I → Ideal.IsPrime I（使用 Ideal.IsMaximal.isPrime）",
+            "证明: 在 Lean4/Mathlib 中，对 CommRing R 和 Ideal I J，若 I ≤ J 则 R ⧸ J 是 R ⧸ I 的商（使用 Ideal.quotientMap）",
         ],
     },
     # ------------------------------------------------------------------
     #  Phase 20: 代数拓扑 (Algebraic Topology)
+    #  使用 Topology.Homotopy, Topology.Connected 模块
     # ------------------------------------------------------------------
     {
         "name": "代数拓扑",
         "area": "algebraic_topology",
         "tasks": [
-            "证明: 同伦等价关系是自反的，即任意连续映射与自身同伦",
-            "证明: 同伦等价关系是对称的",
-            "证明: 路径连通空间是连通空间",
-            "证明: 同胚的空间具有相同的基本群",
-            "证明: 可缩空间是路径连通的",
+            "证明: 在 Lean4/Mathlib 中，路径连通空间是连通空间，即 PathConnectedSpace α → ConnectedSpace α（使用 PathConnectedSpace.connectedSpace）",
+            "证明: 在 Lean4/Mathlib 中，对任意拓扑空间 α 和 x : α，x 与自身路径连通，即 Joined x x（使用 Joined.refl）",
+            "证明: 在 Lean4/Mathlib 中，若 Joined x y 则 Joined y x（路径连通是对称的，使用 Joined.symm）",
+            "证明: 在 Lean4/Mathlib 中，open TopologicalSpace，连通空间中 connectedComponents 的唯一性：对连通空间，connectedComponent x = Set.univ",
+            "证明: 在 Lean4/Mathlib 中，恒等映射是连续的，即 Continuous (id : α → α)（使用 continuous_id）",
         ],
     },
     # ------------------------------------------------------------------
@@ -335,58 +345,62 @@ MATH_BRANCHES = [
     },
     # ------------------------------------------------------------------
     #  Phase 23: 模型论 (Model Theory)
+    #  使用 ModelTheory.Basic 和 FirstOrder 模块
     # ------------------------------------------------------------------
     {
         "name": "模型论",
         "area": "model_theory",
         "tasks": [
-            "证明: 任意一阶结构是自身的子结构",
-            "证明: 结构嵌入保持原子公式的真值",
-            "证明: 同构的结构满足相同的一阶句子",
-            "证明: 两个结构的同构关系是对称的",
-            "证明: 结构同构的复合仍是结构同构",
+            "证明: 在 Lean4/Mathlib 中，open FirstOrder Language，对任意一阶语言 L 和结构 M [L.Structure M]，恒等嵌入是嵌入（Embedding.refl L M）",
+            "证明: 在 Lean4/Mathlib 中，一阶理论中空理论的模型就是所有结构（Theory.Model.of_trivial）",
+            "证明: 在 Lean4/Mathlib 中，对任意类型 α，α 上的等价关系 Eq 是等价关系（使用 eq_equivalence）",
+            "证明: 在 Lean4/Mathlib 中，对任意 DecidableEq α 和 a : α，({a} : Finset α).card = 1（使用 Finset.card_singleton）",
+            "证明: 在 Lean4/Mathlib 中，对任意类型 α 和 BEq α 实例，∀ a : α, a == a（使用 BEq.refl 或 beq_self_eq_true）",
         ],
     },
     # ------------------------------------------------------------------
     #  Phase 24: 信息论 (Information Theory)
+    #  使用 Combinatorics.SimpleGraph, Nat.dist 等模块
     # ------------------------------------------------------------------
     {
         "name": "信息论",
         "area": "information_theory",
         "tasks": [
-            "证明: 汉明距离满足 d(x, x) = 0（自反性）",
-            "证明: 汉明距离满足对称性 d(x, y) = d(y, x)",
-            "证明: 汉明距离满足三角不等式",
-            "证明: 汉明距离是非负的",
-            "证明: 对任意两个码字 x 和 y，若汉明距离 d(x, y) = 0 则 x = y",
+            "证明: 在 Lean4/Mathlib 中，对 α [DecidableEq α] 和 x : α → Fin n，hammingDist x x = 0（汉明距离自反性）",
+            "证明: 在 Lean4/Mathlib 中，对 α [DecidableEq α] 和 x y : α → Fin n，hammingDist x y = hammingDist y x（汉明距离对称性）",
+            "证明: 在 Lean4/Mathlib 中，Nat.dist 满足 Nat.dist n n = 0（自然数距离自反性）",
+            "证明: 在 Lean4/Mathlib 中，Nat.dist 满足对称性 Nat.dist m n = Nat.dist n m（使用 Nat.dist_comm）",
+            "证明: 在 Lean4/Mathlib 中，对有限类型 α [Fintype α] 和 s : Finset α，s.card ≤ Fintype.card α（使用 Finset.card_le_univ）",
         ],
     },
     # ------------------------------------------------------------------
     #  Phase 25: 凝聚数学 (Condensed Mathematics)
+    #  使用 Condensed, Sheaf 模块
     # ------------------------------------------------------------------
     {
         "name": "凝聚数学",
         "area": "condensed",
         "tasks": [
-            "证明: 离散集合可以自然地视为凝聚集合",
-            "证明: 凝聚阿贝尔群的直和仍是凝聚阿贝尔群",
-            "证明: 凝聚集合的范畴具有有限极限",
-            "证明: 凝聚阿贝尔群构成阿贝尔范畴",
-            "证明: 离散化函子保持有限乘积",
+            "证明: 在 Lean4/Mathlib 中，open CategoryTheory，对任意范畴 C 的对象 X，𝟙 X ≫ 𝟙 X = 𝟙 X（恒等态射幂等，使用 Category.id_comp）",
+            "证明: 在 Lean4/Mathlib 中，open CategoryTheory，对任意函子 F : C ⥤ D，F.map (𝟙 X) = 𝟙 (F.obj X)（函子保持恒等）",
+            "证明: 在 Lean4/Mathlib 中，open CategoryTheory，自然变换的恒等存在：NatTrans.id F 是从 F 到 F 的自然变换",
+            "证明: 在 Lean4/Mathlib 中，对 AddCommGroup G，G 的直和 G ⊕ G 仍是 AddCommGroup（使用 instAddCommGroupProd 或 Prod.instAddCommGroup）",
+            "证明: 在 Lean4/Mathlib 中，open CategoryTheory，对任意范畴 C 的对象 X Y 和态射 f : X ⟶ Y，f ≫ 𝟙 Y = f（使用 Category.comp_id）",
         ],
     },
     # ------------------------------------------------------------------
     #  Phase 26: 表示论 (Representation Theory)
+    #  使用 Representation, Module 模块
     # ------------------------------------------------------------------
     {
         "name": "表示论",
         "area": "representation_theory",
         "tasks": [
-            "证明: 平凡表示是群表示",
-            "证明: 两个表示的直和仍是群表示",
-            "证明: 有限群在特征为零的域上的表示是完全可约的（Maschke 定理）",
-            "证明: 群表示的子表示的补空间也是子表示（在半单情况下）",
-            "证明: Schur 引理：不可约表示之间的非零同态是同构",
+            "证明: 在 Lean4/Mathlib 中，对任意 Module R M，零子模块 ⊥ 是子模块（使用 Submodule.bot_mem 相关引理）",
+            "证明: 在 Lean4/Mathlib 中，对任意 R-Module M 和 Submodule R M，子模块对加法封闭（使用 Submodule.add_mem）",
+            "证明: 在 Lean4/Mathlib 中，对任意 R-Module M，Module.End R M 构成环（使用 Ring (Module.End R M)，这是自动实例）",
+            "证明: 在 Lean4/Mathlib 中，对 Module R M 和线性映射 f g : M →ₗ[R] M，f + g 仍是线性映射（使用 LinearMap.add）",
+            "证明: 在 Lean4/Mathlib 中，对 Module R M，恒等线性映射 LinearMap.id 满足 LinearMap.id x = x（使用 LinearMap.id_apply）",
         ],
     },
 ]

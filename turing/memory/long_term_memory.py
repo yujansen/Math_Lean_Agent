@@ -254,6 +254,94 @@ class LongTermMemory:
         )
         return self.add(entry)
 
+    def get_proven_theorems(self, area: str = "", limit: int = 50) -> list[dict]:
+        """获取已证明的定理，可按领域过滤。
+
+        返回带有 theorem_name 和 lean_code 的定理列表，供 Prover 直接引用。
+        """
+        self._ensure_init()
+        if not self._initialized:
+            return []
+        try:
+            where_filter = {"type": "theorem", "source": "self_proved"}
+            if area:
+                where_filter = {
+                    "$and": [
+                        {"type": "theorem"},
+                        {"source": "self_proved"},
+                    ]
+                }
+            results = self._collection.get(
+                where={"type": "theorem"},
+                limit=limit,
+            )
+            entries = []
+            if results and results["ids"]:
+                for i, doc_id in enumerate(results["ids"]):
+                    meta = results["metadatas"][i] if results["metadatas"] else {}
+                    if meta.get("source") != "self_proved":
+                        continue
+                    if area and meta.get("area", "") != area:
+                        continue
+                    lean_code = meta.get("lean_code", "")
+                    if not lean_code:
+                        continue
+                    entries.append({
+                        "id": doc_id,
+                        "theorem_name": meta.get("theorem_name", ""),
+                        "natural_language": meta.get("natural_language", ""),
+                        "lean_code": lean_code,
+                        "area": meta.get("area", ""),
+                        "description": meta.get("description", ""),
+                    })
+            return entries
+        except Exception as e:
+            logger.warning(f"获取已证定理失败: {e}")
+            return []
+
+    # 跨分支关联表：定义哪些数学分支之间有知识复用价值
+    RELATED_AREAS: dict[str, list[str]] = {
+        "linear_algebra": ["algebra", "group_theory", "ring_theory", "field_theory"],
+        "group_theory": ["algebra", "ring_theory", "representation_theory"],
+        "ring_theory": ["algebra", "field_theory", "algebraic_geometry", "number_theory"],
+        "field_theory": ["algebra", "ring_theory", "number_theory", "algebraic_geometry"],
+        "measure_theory": ["analysis", "topology", "probability"],
+        "probability": ["measure_theory", "analysis", "combinatorics"],
+        "algebraic_geometry": ["algebra", "ring_theory", "field_theory", "topology", "category_theory"],
+        "algebraic_topology": ["topology", "algebra", "group_theory", "category_theory"],
+        "category_theory": ["algebra", "topology", "set_theory", "order_theory"],
+        "geometry": ["analysis", "linear_algebra", "topology"],
+        "representation_theory": ["algebra", "group_theory", "linear_algebra", "ring_theory"],
+        "condensed": ["topology", "category_theory", "algebra"],
+        "model_theory": ["logic", "set_theory", "algebra"],
+        "information_theory": ["combinatorics", "probability", "number_theory"],
+        "dynamics": ["analysis", "topology"],
+        "computability": ["logic", "set_theory", "number_theory"],
+        "topology": ["analysis", "set_theory", "order_theory"],
+        "analysis": ["topology", "order_theory", "algebra"],
+        "number_theory": ["algebra", "ring_theory", "combinatorics"],
+        "algebra": ["number_theory", "group_theory", "ring_theory", "linear_algebra"],
+        "order_theory": ["set_theory", "algebra", "topology"],
+        "set_theory": ["logic", "order_theory"],
+        "logic": ["set_theory", "computability", "model_theory"],
+        "combinatorics": ["number_theory", "probability", "set_theory"],
+        "functions": ["set_theory", "analysis", "algebra"],
+    }
+
+    def get_cross_branch_theorems(self, area: str, limit: int = 10) -> list[dict]:
+        """获取当前分支 + 相关分支的已证定理，用于跨分支知识复用。"""
+        related_areas = self.RELATED_AREAS.get(area, [])
+        all_areas = [area] + related_areas
+
+        theorems = []
+        seen_ids = set()
+        for a in all_areas:
+            for thm in self.get_proven_theorems(area=a, limit=limit):
+                if thm["id"] not in seen_ids:
+                    seen_ids.add(thm["id"])
+                    theorems.append(thm)
+        return theorems[:limit]
+
     def get_novel_theorems(self) -> list[dict]:
         """获取所有 Mathlib 中不存在的原创定理。"""
         self._ensure_init()
