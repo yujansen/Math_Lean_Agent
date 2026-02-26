@@ -1,0 +1,15 @@
+name = "TuringWorkspace"
+version = "0.1.0"
+defaultTargets = ["turingworkspace"]
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+version = "git#master"
+
+[[lean_lib]]
+name = "TuringWorkspace"
+
+[[lean_exe]]
+name = "turingworkspace"
+root = "Main"

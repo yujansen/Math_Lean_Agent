@@ -1,0 +1,101 @@
+# ============================================================
+#  TURING 数学研究智能体系统配置
+# ============================================================
+
+system:
+  name: "Turing"
+  version: "1.0.0"
+  log_level: "INFO"                  # DEBUG | INFO | WARNING | ERROR
+  data_dir: "./data"
+  snapshot_dir: "./data/snapshots"
+  max_snapshots: 5
+  backup_interval_hours: 6
+
+# ----- LLM 配置 -----
+llm:
+  provider: "ollama"                 # ollama | openai_compatible
+  base_url: "http://localhost:11434"
+  model: "qwen3-coder:30b"
+  temperature: 0.7
+  max_tokens: 8192
+  timeout: 120                       # 秒
+  # 轻量模型用于简单任务
+  light_model: "qwen3-coder:30b"
+  # 外部 LLM 备用
+  external_llm:
+    enabled: false
+    provider: "openai"
+    api_key: ""
+    model: "gpt-4"
+    base_url: "https://api.openai.com/v1"
+
+# ----- Lean 4 配置 -----
+lean:
+  executable: "lean"                 # lean 可执行文件路径
+  lake_executable: "lake"            # lake 构建工具路径
+  project_dir: "./lean_workspace"    # Lean 项目目录
+  mathlib_available: true
+  compile_timeout: 300                # 秒（Mathlib 导入较慢）
+  max_retries: 5                     # 同一问题最大重试次数
+
+# ----- 记忆系统配置 -----
+memory:
+  working:
+    max_items: 50                    # 工作记忆最大条目数
+    compression_threshold: 40       # 触发压缩的阈值
+
+  long_term:
+    chroma_persist_dir: "./data/chroma_db"
+    collection_name: "turing_knowledge"
+    embedding_model: "all-MiniLM-L6-v2"
+    similarity_threshold: 0.92      # 去重阈值
+    default_top_k: 5
+
+  persistent:
+    db_path: "./data/turing_persistent.db"
+    log_dir: "./data/logs"
+
+# ----- 智能体配置 -----
+agents:
+  max_concurrent: 3                  # 最大并行智能体数
+  default_max_iterations: 50
+  default_timeout_minutes: 30
+  default_max_tokens_per_call: 8192
+
+# ----- 资源管理 -----
+resources:
+  # 资源阈值
+  gpu_high: 16          # GB - 资源充足
+  gpu_medium: 8         # GB - 资源中等
+  ram_high: 32          # GB
+  ram_medium: 16        # GB
+  check_interval: 30    # 秒 - 资源检测间隔
+
+# ----- 自我演化 -----
+evolution:
+  reflection_task_interval: 20       # 每N个任务反思一次
+  reflection_time_interval: 24       # 每N小时反思一次
+  priority_increment: 0.1            # 成功时优先级增量
+  priority_decrement: 0.1            # 失败时优先级减量
+  priority_max: 1.0
+  priority_min: 0.0
+
+# ----- 训练配置 -----
+training:
+  growth_zone_ratio: 0.7             # 70% 成长区
+  weakness_ratio: 0.2                # 20% 薄弱区
+  exploration_ratio: 0.1             # 10% 随机探索
+  initial_skill_level: 1             # 初始技能等级(1-10)
+
+# ----- 网络配置 -----
+web:
+  enabled: true
+  timeout: 30
+  user_agent: "Turing-Math-Agent/1.0"
+  sources:
+    - name: "project_euler"
+      url: "https://projecteuler.net"
+      priority: 3
+    - name: "mathlib_issues"
+      url: "https://github.com/leanprover-community/mathlib4/issues"
+      priority: 1

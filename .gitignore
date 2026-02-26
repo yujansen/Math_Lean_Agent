@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Data (generated at runtime)
+data/chroma_db/
+data/logs/
+data/*.db
+data/*.db-journal
+data/snapshots/*.json
+
+# Lean workspace (has its own git; ignore build artifacts)
+lean_workspace/.lake/
+lean_workspace/.git/
+lean_workspace/build/
+lean_workspace/turing_proof_*.lean
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

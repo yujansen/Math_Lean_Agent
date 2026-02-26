@@ -1,0 +1,31 @@
+# ── Turing 数学研究智能体 — Python 依赖 ──
+# Python >= 3.11
+
+# Core
+pyyaml>=6.0
+pydantic>=2.0
+pydantic-settings>=2.0
+
+# LLM (Ollama-compatible OpenAI API)
+openai>=1.0
+httpx>=0.25
+
+# Vector database / RAG
+chromadb>=0.4.0
+sentence-transformers>=2.2
+
+# Database (async SQLite)
+aiosqlite>=0.19
+
+# Resource monitoring
+psutil>=5.9
+GPUtil>=1.4.0
+
+# Web scraping
+aiohttp>=3.9
+beautifulsoup4>=4.12
+lxml>=4.9
+
+# Logging & CLI
+rich>=13.0
+loguru>=0.7

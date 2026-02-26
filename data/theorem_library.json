@@ -1,0 +1,512 @@
+{
+  "timestamp": "2026-02-25T19:20:54Z",
+  "total_tasks": 50,
+  "total_success": 40,
+  "success_rate": "80%",
+  "total_elapsed_seconds": 7194.5182728767395,
+  "branches": [
+    {
+      "name": "自然数论",
+      "area": "number_theory",
+      "success": 5,
+      "total": 5
+    },
+    {
+      "name": "整数与整除性",
+      "area": "number_theory",
+      "success": 5,
+      "total": 5
+    },
+    {
+      "name": "命题逻辑",
+      "area": "logic",
+      "success": 5,
+      "total": 5
+    },
+    {
+      "name": "集合论",
+      "area": "set_theory",
+      "success": 4,
+      "total": 5
+    },
+    {
+      "name": "代数结构",
+      "area": "algebra",
+      "success": 3,
+      "total": 5
+    },
+    {
+      "name": "序与格",
+      "area": "order_theory",
+      "success": 4,
+      "total": 5
+    },
+    {
+      "name": "实分析",
+      "area": "analysis",
+      "success": 4,
+      "total": 5
+    },
+    {
+      "name": "函数与映射",
+      "area": "functions",
+      "success": 4,
+      "total": 5
+    },
+    {
+      "name": "组合数学",
+      "area": "combinatorics",
+      "success": 3,
+      "total": 5
+    },
+    {
+      "name": "拓扑学",
+      "area": "topology",
+      "success": 3,
+      "total": 5
+    }
+  ],
+  "named_theorems": [
+    {
+      "phase": "自然数论",
+      "area": "number_theory",
+      "task": "证明: 对任意自然数 n，n + 0 = n",
+      "theorem_name": "Nat.add_zero",
+      "chinese_name": "自然数加法零元定理",
+      "is_novel": false,
+      "description": "任意自然数与零相加等于该自然数本身",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (n : Nat) : n + 0 = n := by\n  simp"
+    },
+    {
+      "phase": "自然数论",
+      "area": "number_theory",
+      "task": "证明: 对任意自然数 a 和 b，a + b = b + a（加法交换律）",
+      "theorem_name": "Nat.add_comm",
+      "chinese_name": "自然数加法交换律",
+      "is_novel": false,
+      "description": "任意两个自然数相加的结果与加数的顺序无关",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (a b : Nat) : a + b = b + a := by\n  exact Nat.add_comm a b"
+    },
+    {
+      "phase": "自然数论",
+      "area": "number_theory",
+      "task": "证明: 对任意自然数 a, b, c，(a + b) + c = a + (b + c)（加法结合律）",
+      "theorem_name": "Nat.add_assoc",
+      "chinese_name": "自然数加法结合律",
+      "is_novel": false,
+      "description": "任意三个自然数先加前两个再加第三个，与先加后两个再加第三个的结果相同。",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (a b c : Nat) : (a + b) + c = a + (b + c) := by\n  exact Nat.add_assoc a b c"
+    },
+    {
+      "phase": "自然数论",
+      "area": "number_theory",
+      "task": "证明: 对任意自然数 a 和 b，a * b = b * a（乘法交换律）",
+      "theorem_name": "Nat.mul_comm",
+      "chinese_name": "自然数乘法交换律",
+      "is_novel": false,
+      "description": "任意两个自然数的乘积与乘数的顺序无关。",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (a b : Nat) : a * b = b * a := by\n  exact Nat.mul_comm a b"
+    },
+    {
+      "phase": "自然数论",
+      "area": "number_theory",
+      "task": "证明: 对任意自然数 a, b, c，a * (b + c) = a * b + a * c（左分配律）",
+      "theorem_name": "Nat.left_distributive",
+      "chinese_name": "自然数左分配律",
+      "is_novel": false,
+      "description": "对于任意自然数a, b, c，a乘以(b+c)等于a乘以b加上a乘以c",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (a b c : Nat) : a * (b + c) = a * b + a * c := by\n  ring"
+    },
+    {
+      "phase": "整数与整除性",
+      "area": "number_theory",
+      "task": "证明: 对任意整数 a，a + 0 = a",
+      "theorem_name": "add_zero",
+      "chinese_name": "加法零元性质",
+      "is_novel": false,
+      "description": "任意整数与零相加等于其自身",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (a : Int) : a + 0 = a := by\n  simp"
+    },
+    {
+      "phase": "整数与整除性",
+      "area": "number_theory",
+      "task": "证明: 对任意整数 a，a + (-a) = 0",
+      "theorem_name": "add_left_neg",
+      "chinese_name": "加法左逆元",
+      "is_novel": false,
+      "description": "对于任意整数a，a与其负数相加等于零。",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (a : Int) : a + (-a) = 0 := by\n  simp"
+    },
+    {
+      "phase": "整数与整除性",
+      "area": "number_theory",
+      "task": "证明: 对任意整数 a 和 b，a + b = b + a",
+      "theorem_name": "Int.add_comm",
+      "chinese_name": "整数加法交换律",
+      "is_novel": false,
+      "description": "任意两个整数相加的结果与加数的顺序无关。",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (a b : Int) : a + b = b + a := by\n  exact Int.add_comm a b"
+    },
+    {
+      "phase": "整数与整除性",
+      "area": "number_theory",
+      "task": "证明: 对任意整数 a，a * 1 = a",
+      "theorem_name": "mul_one",
+      "chinese_name": "乘法单位元左乘性质",
+      "is_novel": false,
+      "description": "任意整数与1相乘等于其自身",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (a : Int) : a * 1 = a := by\n  simp"
+    },
+    {
+      "phase": "整数与整除性",
+      "area": "number_theory",
+      "task": "证明: 对任意整数 a，a * 0 = 0",
+      "theorem_name": "multiplication_by_zero",
+      "chinese_name": "任意整数乘以零等于零",
+      "is_novel": false,
+      "description": "该定理表明任何整数与零相乘都等于零。",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (a : Int) : a * 0 = 0 := by\n  ring"
+    },
+    {
+      "phase": "命题逻辑",
+      "area": "logic",
+      "task": "证明: 对任意命题 P，P → P（同一律）",
+      "theorem_name": "implication_reflexivity",
+      "chinese_name": "蕴含自反性",
+      "is_novel": false,
+      "description": "在命题逻辑中，任意命题蕴含自身成立。",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (P : Prop) : P → P := by\n  tauto"
+    },
+    {
+      "phase": "命题逻辑",
+      "area": "logic",
+      "task": "证明: 对任意命题 P 和 Q，P → Q → P（弱化）",
+      "theorem_name": "weakening_rule",
+      "chinese_name": "弱化规则",
+      "is_novel": false,
+      "description": "在命题逻辑中，从命题P和Q推出P的逻辑蕴含关系成立。",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (P Q : Prop) : P → Q → P := by\n  tauto"
+    },
+    {
+      "phase": "命题逻辑",
+      "area": "logic",
+      "task": "证明: 对任意命题 P 和 Q，P ∧ Q → Q ∧ P（合取交换律）",
+      "theorem_name": "and_comm",
+      "chinese_name": "合取交换律",
+      "is_novel": false,
+      "description": "命题逻辑中合取运算的交换律，即P和Q的合取等价于Q和P的合取。",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (P Q : Prop) : P ∧ Q → Q ∧ P := by\n  tauto"
+    },
+    {
+      "phase": "命题逻辑",
+      "area": "logic",
+      "task": "证明: 对任意命题 P 和 Q，P ∨ Q → Q ∨ P（析取交换律）",
+      "theorem_name": "commutativity_of_disjunction",
+      "chinese_name": "析取交换律",
+      "is_novel": false,
+      "description": "命题逻辑中析取运算的交换律，即 P ∨ Q 等价于 Q ∨ P。",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (P Q : Prop) : P ∨ Q → Q ∨ P := by\n  tauto"
+    },
+    {
+      "phase": "命题逻辑",
+      "area": "logic",
+      "task": "证明: 对任意命题 P，¬¬P → P（双重否定消去）",
+      "theorem_name": "double_negation_elimination",
+      "chinese_name": "双重否定消去",
+      "is_novel": false,
+      "description": "在经典逻辑中，如果一个命题的否定是假的，那么这个命题必然为真。",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (P : Prop) : ¬¬P → P := by\n  tauto"
+    },
+    {
+      "phase": "集合论",
+      "area": "set_theory",
+      "task": "证明: 对任意集合 S，S ⊆ S（自反性）",
+      "theorem_name": "set_subset_reflexivity",
+      "chinese_name": "集合子集自反性",
+      "is_novel": false,
+      "description": "任意集合都是其自身的子集",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem {S : Set α} : S ⊆ S := by\n  tauto"
+    },
+    {
+      "phase": "集合论",
+      "area": "set_theory",
+      "task": "证明: 对任意集合 A 和 B，A ∩ B ⊆ A",
+      "theorem_name": "intersection_subset_left",
+      "chinese_name": "交集包含于左集",
+      "is_novel": false,
+      "description": "任意两个集合的交集包含于其中一个集合",
+      "lean_lines": 5,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem {α : Type} {A B : Set α} : A ∩ B ⊆ A := by\n  intro x hx\n  exact hx.1"
+    },
+    {
+      "phase": "集合论",
+      "area": "set_theory",
+      "task": "证明: 对任意集合 A 和 B，A ∩ B = B ∩ A（交集交换律）",
+      "theorem_name": "inter_comm",
+      "chinese_name": "交集交换律",
+      "is_novel": false,
+      "description": "任意两个集合的交集运算满足交换律",
+      "lean_lines": 9,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem {α : Type} {A B : Set α} : A ∩ B = B ∩ A := by\n  ext x\n  constructor\n  · intro hx\n    exact ⟨hx.2, hx.1⟩\n  · intro hx\n    exact ⟨hx.2, hx.1⟩"
+    },
+    {
+      "phase": "集合论",
+      "area": "set_theory",
+      "task": "证明: 对任意类型 α 的集合 S，S ∩ ∅ = ∅",
+      "theorem_name": "intersection_with_empty_eq_empty",
+      "chinese_name": "空集与任意集合的交集等于空集",
+      "is_novel": false,
+      "description": "任意集合与空集的交集恒等于空集",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem {α : Type} {S : Set α} : S ∩ ∅ = ∅ := by\n  simp"
+    },
+    {
+      "phase": "代数结构",
+      "area": "algebra",
+      "task": "证明: 在任意群 G 中，对任意元素 a，(a⁻¹)⁻¹ = a",
+      "theorem_name": "inv_inv_eq",
+      "chinese_name": "逆元的逆元等于原元素",
+      "is_novel": false,
+      "description": "在任意群中，任意元素的逆元的逆元等于该元素本身。",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem {G : Type*} [Group G] (a : G) : (a⁻¹)⁻¹ = a := by\n  simp"
+    },
+    {
+      "phase": "代数结构",
+      "area": "algebra",
+      "task": "证明: 对任意环 R 和元素 a，0 * a = 0",
+      "theorem_name": "zero_mul",
+      "chinese_name": "零元素乘法消去定理",
+      "is_novel": false,
+      "description": "在任意环中，零元素与任意元素相乘等于零。",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (R : Type*) [Ring R] (a : R) : 0 * a = 0 := by\n  simp [mul_zero]"
+    },
+    {
+      "phase": "代数结构",
+      "area": "algebra",
+      "task": "证明: 对任意环 R 和元素 a 和 b，(-a) * b = -(a * b)",
+      "theorem_name": "neg_mul_eq_neg_mul",
+      "chinese_name": "负元素乘法等于负乘积",
+      "is_novel": false,
+      "description": "在环中，负元素与任意元素的乘积等于该元素与该元素的负值的乘积的负值。",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (a b : ℤ) : (-a) * b = -(a * b) := by\n  ring"
+    },
+    {
+      "phase": "序与格",
+      "area": "order_theory",
+      "task": "证明: 对任意全序集中的元素 a 和 b，a ≤ b 或 b ≤ a",
+      "theorem_name": "linearity_of_order",
+      "chinese_name": "序的线性性",
+      "is_novel": false,
+      "description": "任意全序集中的任意两个元素都是可比较的",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem {α : Type} [LinearOrder α] (a b : α) : a ≤ b ∨ b ≤ a := by\n  exact le_total a b"
+    },
+    {
+      "phase": "序与格",
+      "area": "order_theory",
+      "task": "证明: 在任意格中，a ⊓ b ≤ a",
+      "theorem_name": "meet_left_le",
+      "chinese_name": "meet运算左侧小于等于",
+      "is_novel": false,
+      "description": "在任意格中，两个元素的交运算小于等于其中一个元素",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem {α : Type} [Lattice α] (a b : α) : a ⊓ b ≤ a := by\n  simp"
+    },
+    {
+      "phase": "序与格",
+      "area": "order_theory",
+      "task": "证明: 在任意格中，a ≤ a ⊔ b",
+      "theorem_name": "join_left_le",
+      "chinese_name": "并运算左部小于等于",
+      "is_novel": false,
+      "description": "在任意格中，元素a小于等于a与b的并运算",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem {α : Type} [Lattice α] (a b : α) : a ≤ a ⊔ b := by\n  simp"
+    },
+    {
+      "phase": "序与格",
+      "area": "order_theory",
+      "task": "证明: 对任意偏序集中的元素 a，a ≤ a（自反性）",
+      "theorem_name": "reflexivity_of_preorder",
+      "chinese_name": "偏序集自反性",
+      "is_novel": false,
+      "description": "在任意偏序集中，每个元素都小于等于自身。",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem {α : Type} [Preorder α] (a : α) : a ≤ a := by\n  simp"
+    },
+    {
+      "phase": "实分析",
+      "area": "analysis",
+      "task": "证明: 对任意实数 x，x + 0 = x",
+      "theorem_name": "add_zero_real",
+      "chinese_name": "实数加法零元性质",
+      "is_novel": false,
+      "description": "对于任意实数x，x加0等于x",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (x : ℝ) : x + 0 = x := by\n  simp"
+    },
+    {
+      "phase": "实分析",
+      "area": "analysis",
+      "task": "证明: 对任意实数 x 和 y，x + y = y + x",
+      "theorem_name": "commutativity_of_addition",
+      "chinese_name": "加法交换律",
+      "is_novel": false,
+      "description": "任意两个实数相加的结果与加数的顺序无关。",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (x y : ℝ) : x + y = y + x := by\n  exact @AddCommGroup.add_comm ℝ _ _ _"
+    },
+    {
+      "phase": "实分析",
+      "area": "analysis",
+      "task": "证明: 对任意实数 x 和 y，|x + y| ≤ |x| + |y|（三角不等式）",
+      "theorem_name": "triangle_inequality",
+      "chinese_name": "三角不等式",
+      "is_novel": false,
+      "description": "任意两个实数之和的绝对值不大于它们绝对值的和",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (x y : ℝ) : |x + y| ≤ |x| + |y| := by\n  exact abs_add_le x y"
+    },
+    {
+      "phase": "实分析",
+      "area": "analysis",
+      "task": "证明: 对任意实数 x，x^2 ≥ 0",
+      "theorem_name": "sq_nonneg",
+      "chinese_name": "平方非负性",
+      "is_novel": false,
+      "description": "任意实数的平方都大于等于零",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (x : ℝ) : x ^ 2 ≥ 0 := by\n  exact sq_nonneg x"
+    },
+    {
+      "phase": "函数与映射",
+      "area": "functions",
+      "task": "证明: 恒等函数是单射",
+      "theorem_name": "injectivity_of_identity_function",
+      "chinese_name": "恒等函数的单射性",
+      "is_novel": false,
+      "description": "恒等函数是单射的",
+      "lean_lines": 5,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem {α : Type} : Function.Injective (id : α → α) := by\n  intro a₁ a₂ h\n  exact h"
+    },
+    {
+      "phase": "函数与映射",
+      "area": "functions",
+      "task": "证明: 恒等函数是满射",
+      "theorem_name": "identity_function_is_surjective",
+      "chinese_name": "恒等函数是满射",
+      "is_novel": false,
+      "description": "在任意集合上定义的恒等函数都是满射。",
+      "lean_lines": 6,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem {A : Type} (f : A → A) (hf : ∀ a : A, f a = a) : Function.Surjective f := by\n  intro y\n  use y\n  exact hf y"
+    },
+    {
+      "phase": "函数与映射",
+      "area": "functions",
+      "task": "证明: 两个单射函数的复合仍是单射",
+      "theorem_name": "composition_of_injective_functions_is_injective",
+      "chinese_name": "单射函数的复合仍是单射",
+      "is_novel": false,
+      "description": "两个单射函数的复合映射仍然是单射函数。",
+      "lean_lines": 10,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem {A B C : Type*} {f : A → B} {g : B → C} \n  (hf : Function.Injective f) (hg : Function.Injective g) : Function.Injective (g ∘ f) := by\n  intro x₁ x₂\n  simp only [Function.comp_apply]\n  intro h\n  have h₁ : g (f x₁) = g (f x₂) := h\n  have h₂ : f x₁ = f x₂ := hg h₁\n  exact hf h₂"
+    },
+    {
+      "phase": "函数与映射",
+      "area": "functions",
+      "task": "证明: 对任意函数 f，f ∘ id = f",
+      "theorem_name": "left_identity_of_function_composition",
+      "chinese_name": "函数复合的左单位元性质",
+      "is_novel": false,
+      "description": "对于任意函数f，函数f与恒等函数的复合等于函数f本身",
+      "lean_lines": 5,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem {A B : Type*} (f : A → B) : f ∘ id = f := by\n  ext x\n  simp"
+    },
+    {
+      "phase": "组合数学",
+      "area": "combinatorics",
+      "task": "证明: 对任意自然数 n，0 ≤ n（自然数非负性）",
+      "theorem_name": "Nat.zero_le",
+      "chinese_name": "自然数非负性",
+      "is_novel": false,
+      "description": "任意自然数都大于等于零",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (n : Nat) : 0 ≤ n := by\n  omega"
+    },
+    {
+      "phase": "组合数学",
+      "area": "combinatorics",
+      "task": "证明: 对任意自然数 n，n ≤ n + 1",
+      "theorem_name": "Nat.le_add_right",
+      "chinese_name": "自然数右加不等式",
+      "is_novel": false,
+      "description": "对于任意自然数n，n小于等于n加上任意自然数",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (n : Nat) : n ≤ n + 1 := by\n  omega"
+    },
+    {
+      "phase": "组合数学",
+      "area": "combinatorics",
+      "task": "证明: 对任意自然数 n 和 m，若 n ≤ m 且 m ≤ n，则 n = m（反对称性）",
+      "theorem_name": "Nat.le_antisymm",
+      "chinese_name": "自然数序关系反对称性",
+      "is_novel": false,
+      "description": "自然数序关系满足反对称性，即若两个自然数互为上下界，则二者相等",
+      "lean_lines": 9,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem (n m : Nat) : n ≤ m ∧ m ≤ n → n = m := by\n  intro h\n  cases h with\n  | intro hn hm =>\n    -- 直接使用已知的自然数序关系性质\n    -- 如果 n ≤ m 且 m ≤ n，则 n = m\n    exact Nat.le_antisymm hn hm"
+    },
+    {
+      "phase": "拓扑学",
+      "area": "topology",
+      "task": "证明: 在任意拓扑空间中，空集是开集",
+      "theorem_name": "isOpen_empty",
+      "chinese_name": "空集是开集",
+      "is_novel": false,
+      "description": "在任意拓扑空间中，空集是开集。",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem {X : Type} [TopologicalSpace X] : IsOpen (∅ : Set X) := by\n  exact isOpen_empty"
+    },
+    {
+      "phase": "拓扑学",
+      "area": "topology",
+      "task": "证明: 在任意度量空间中，距离函数 d(x, x) = 0",
+      "theorem_name": "dist_self_eq_zero",
+      "chinese_name": "自距离等于零",
+      "is_novel": false,
+      "description": "在任意度量空间中，任意点到自身的距离等于零。",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem {α : Type*} [MetricSpace α] (x : α) : dist x x = 0 := by\n  exact dist_self x"
+    },
+    {
+      "phase": "拓扑学",
+      "area": "topology",
+      "task": "证明: 在任意度量空间中，d(x, y) = d(y, x)（对称性）",
+      "theorem_name": "dist_comm",
+      "chinese_name": "距离函数对称性",
+      "is_novel": false,
+      "description": "在任意度量空间中，距离函数满足对称性，即 d(x,y) 等于 d(y,x)",
+      "lean_lines": 4,
+      "lean_code": "import Mathlib\n\ntheorem main_theorem {α : Type*} [MetricSpace α] (x y : α) : dist x y = dist y x := by\n  exact dist_comm x y"
+    }
+  ],
+  "novel_theorems": []
+}
