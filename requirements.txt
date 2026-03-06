@@ -29,3 +29,7 @@ lxml>=4.9
 # Logging & CLI
 rich>=13.0
 loguru>=0.7
+
+# Web frontend (FastAPI)
+fastapi>=0.110
+uvicorn[standard]>=0.29

@@ -252,7 +252,10 @@ class PersistentMemory:
     def update_priority(self, experience_id: int, success: bool):
         """更新经验的优先级权重。"""
         self._ensure_init()
-        cfg = get_config().evolution
+        # 经验优先级调整参数（硬编码，避免配置膨胀）
+        _PRIORITY_STEP = 0.1
+        _PRIORITY_MAX = 1.0
+        _PRIORITY_MIN = 0.0
 
         with self._connect() as conn:
             row = conn.execute(
@@ -267,9 +270,9 @@ class PersistentMemory:
             apply_count = row["apply_count"]
 
             if success:
-                new_priority = min(current_priority + cfg.priority_increment, cfg.priority_max)
+                new_priority = min(current_priority + _PRIORITY_STEP, _PRIORITY_MAX)
             else:
-                new_priority = max(current_priority - cfg.priority_decrement, cfg.priority_min)
+                new_priority = max(current_priority - _PRIORITY_STEP, _PRIORITY_MIN)
 
             conn.execute(
                 """UPDATE experience

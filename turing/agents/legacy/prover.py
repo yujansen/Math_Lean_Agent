@@ -1,5 +1,8 @@
 """
-Prover 智能体 — 将自然语言数学命题转为 Lean 4 形式化代码并验证。
+[LEGACY] Prover 智能体 — 仅在 --mode multi 时使用。
+推荐架构请参见 skill_based_agent.py + turing/skills/。
+
+原功能：将自然语言数学命题转为 Lean 4 形式化代码并验证。
 
 采用"生成–编译–修正"迭代循环（默认最多 5 轮），遵循严格的
 tactic 优先级策略：simp → omega → ring → norm_num → decide →

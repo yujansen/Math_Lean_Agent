@@ -16,6 +16,7 @@ data/chroma_db/
 data/logs/
 data/*.db
 data/*.db-journal
+data/*.log
 data/snapshots/*.json
 
 # Lean workspace (has its own git; ignore build artifacts)

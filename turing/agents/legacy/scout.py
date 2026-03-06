@@ -1,5 +1,8 @@
 """
-Scout 智能体 — 从网络题库抓取数学问题。
+[LEGACY] Scout 智能体 — 仅在 --mode multi 时使用。
+推荐架构请参见 skill_based_agent.py + turing/skills/。
+
+原功能：从网络题库抓取数学问题。
 
 当 Turing 进入"训练模式"时被触发，主动寻找练习题。
 """

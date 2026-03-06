@@ -86,8 +86,13 @@ class MemoryConfig:
 
 @dataclass
 class AgentsConfig:
-    max_concurrent: int = 3
-    default_max_iterations: int = 50
+    """智能体模式选择。
+
+    - ``skill``: 技能驱动单智能体（推荐，LLM 调用减少 ~75%）
+    - ``multi``: 多智能体协作（legacy，功能完整但资源消耗更大）
+    """
+    mode: str = "skill"
+    max_concurrent: int = 3          # 仅 multi 模式有效
     default_timeout_minutes: int = 30
     default_max_tokens_per_call: int = 8192
 
@@ -103,39 +108,24 @@ class ResourcesConfig:
 
 @dataclass
 class EvolutionConfig:
-    reflection_task_interval: int = 20
-    reflection_time_interval: int = 24
-    priority_increment: float = 0.1
-    priority_decrement: float = 0.1
-    priority_max: float = 1.0
-    priority_min: float = 0.0
-
-
-@dataclass
-class TrainingConfig:
-    growth_zone_ratio: float = 0.7
-    weakness_ratio: float = 0.2
-    exploration_ratio: float = 0.1
-    initial_skill_level: int = 1
+    """自我演化与反思触发条件。"""
+    reflection_task_interval: int = 20   # 每 N 个任务触发反思
+    reflection_time_interval: int = 24   # 每 N 小时强制反思
 
 
 @dataclass
 class WebConfig:
     enabled: bool = True
     timeout: int = 30
-    user_agent: str = "Turing-Math-Agent/1.0"
-    sources: list = field(default_factory=list)
+    user_agent: str = "Turing-Math-Agent/2.0"
 
 
 @dataclass
 class SystemConfig:
     name: str = "Turing"
-    version: str = "1.0.0"
+    version: str = "2.1.0"
     log_level: str = "INFO"
     data_dir: str = "./data"
-    snapshot_dir: str = "./data/snapshots"
-    max_snapshots: int = 5
-    backup_interval_hours: int = 6
 
 
 @dataclass
@@ -148,7 +138,6 @@ class TuringConfig:
     agents: AgentsConfig = field(default_factory=AgentsConfig)
     resources: ResourcesConfig = field(default_factory=ResourcesConfig)
     evolution: EvolutionConfig = field(default_factory=EvolutionConfig)
-    training: TrainingConfig = field(default_factory=TrainingConfig)
     web: WebConfig = field(default_factory=WebConfig)
 
     @classmethod
@@ -168,7 +157,6 @@ class TuringConfig:
         _update_dataclass(config.agents, raw.get("agents", {}))
         _update_dataclass(config.resources, raw.get("resources", {}))
         _update_dataclass(config.evolution, raw.get("evolution", {}))
-        _update_dataclass(config.training, raw.get("training", {}))
         _update_dataclass(config.web, raw.get("web", {}))
 
         mem = raw.get("memory", {})
@@ -179,7 +167,6 @@ class TuringConfig:
         # 确保数据目录存在
         for d in [
             config.system.data_dir,
-            config.system.snapshot_dir,
             config.memory.long_term.chroma_persist_dir,
             config.memory.persistent.log_dir,
         ]:
@@ -191,7 +178,6 @@ class TuringConfig:
         """确保所有必要目录存在。"""
         for d in [
             self.system.data_dir,
-            self.system.snapshot_dir,
             self.memory.long_term.chroma_persist_dir,
             self.memory.persistent.log_dir,
         ]:

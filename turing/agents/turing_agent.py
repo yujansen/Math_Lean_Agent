@@ -117,14 +117,13 @@ class TuringAgent(BaseAgent):
 
     def _register_agents(self):
         """注册所有预定义子智能体类型。"""
-        from turing.agents.prover import ProverAgent
-        from turing.agents.explorer import ExplorerAgent
-        from turing.agents.critic import CriticAgent
-        from turing.agents.librarian import LibrarianAgent
-        from turing.agents.scout import ScoutAgent
-        from turing.agents.architect import ArchitectAgent
-        from turing.agents.dynamic_agent import DynamicAgent
-        from turing.agents.evaluator import EvaluatorAgent
+        from turing.agents.legacy.prover import ProverAgent
+        from turing.agents.legacy.explorer import ExplorerAgent
+        from turing.agents.legacy.critic import CriticAgent
+        from turing.agents.legacy.librarian import LibrarianAgent
+        from turing.agents.legacy.scout import ScoutAgent
+        from turing.agents.legacy.architect import ArchitectAgent
+        from turing.agents.legacy.evaluator import EvaluatorAgent
 
         AgentFactory.register("prover", ProverAgent)
         AgentFactory.register("explorer", ExplorerAgent)
@@ -133,8 +132,6 @@ class TuringAgent(BaseAgent):
         AgentFactory.register("scout", ScoutAgent)
         AgentFactory.register("architect", ArchitectAgent)
         AgentFactory.register("evaluator", EvaluatorAgent)
-        AgentFactory.register("custom", DynamicAgent)
-        AgentFactory.register("dynamic", DynamicAgent)
 
     # ==================================================================
     #  初始化与系统自检
@@ -550,7 +547,7 @@ explore（探索概念）| organize（整理知识）
         response = await self.think(prompt)
 
         # 提取代码
-        from turing.agents.prover import ProverAgent
+        from turing.agents.legacy.prover import ProverAgent
         lean_code = ProverAgent._extract_lean_code(response)
 
         if not lean_code:
@@ -841,8 +838,13 @@ Lean 4 代码:
     ) -> Optional[dict]:
         """根据训练策略选择下一个问题。"""
         import random
+        from types import SimpleNamespace
 
-        cfg = self._turing_config.training
+        # 训练参数（legacy 模式内联默认值）
+        cfg = getattr(self._turing_config, "training", None) or SimpleNamespace(
+            growth_zone_ratio=0.7, weakness_ratio=0.2,
+            exploration_ratio=0.1, initial_skill_level=1,
+        )
         skill = max(self._skill_levels.values(), default=cfg.initial_skill_level)
         r = random.random()
 
@@ -999,7 +1001,7 @@ Lean 4 代码:
             return
 
         try:
-            from turing.agents.evaluator import EvaluationReport
+            from turing.agents.legacy.evaluator import EvaluationReport
             report = evaluation_data.get("report")
             if isinstance(report, EvaluationReport):
                 plan = await evaluator.generate_evolution_plan(

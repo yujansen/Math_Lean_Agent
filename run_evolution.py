@@ -10,15 +10,24 @@
 
 用法::
 
-    python run_evolution.py            # 运行全部 26 期、130 个定理
-    TOKENIZERS_PARALLELISM=false python run_evolution.py  # 消除 HF 警告
+    # skill 模式（推荐，LLM 调用少 ~75%）
+    python run_evolution.py --mode skill --phases 3
+
+    # multi 模式（legacy）
+    python run_evolution.py --mode multi --phases 3
+
+    # 全部 26 期
+    TOKENIZERS_PARALLELISM=false python run_evolution.py
 """
 
+import argparse
 import asyncio
 import json
 import time
 
+from turing.config import get_config
 from turing.agents.turing_agent import TuringAgent
+from turing.agents.skill_based_agent import SkillBasedTuringAgent
 
 # ======================================================================
 #  全分支任务库 — 从基础到进阶，覆盖 Lean/Mathlib 的主要数学分支
@@ -406,20 +415,44 @@ MATH_BRANCHES = [
 ]
 
 
+def _parse_args():
+    p = argparse.ArgumentParser(description="Turing 全分支数学演化")
+    p.add_argument("--mode", choices=["skill", "multi"], default=None,
+                   help="覆盖 config.yaml 中的 agents.mode")
+    p.add_argument("--phases", type=int, default=None,
+                   help="只运行前 N 期 (调试用)")
+    return p.parse_args()
+
+
 async def main():
-    turing = TuringAgent()
+    args = _parse_args()
+    config = get_config()
+    mode = args.mode or config.agents.mode
+
+    if mode == "skill":
+        turing = SkillBasedTuringAgent(config)
+    else:
+        turing = TuringAgent(config)
     await turing.initialize()
+
+    branches = MATH_BRANCHES
+    if args.phases:
+        branches = branches[:args.phases]
 
     all_results = []
     total_success = 0
     total_tasks = 0
+    total_llm_calls = 0
     named_theorems = []
 
     t_start = time.time()
 
-    for phase_idx, branch in enumerate(MATH_BRANCHES, 1):
+    print(f"\n  智能体模式: {mode}")
+    print(f"  待运行: {len(branches)} 期\n")
+
+    for phase_idx, branch in enumerate(branches, 1):
         print(f"\n{'='*70}")
-        print(f"  🔬 第 {phase_idx}/{len(MATH_BRANCHES)} 期: {branch['name']} [{branch['area']}]")
+        print(f"  🔬 第 {phase_idx}/{len(branches)} 期: {branch['name']} [{branch['area']}]")
         print(f"{'='*70}")
 
         phase_results = []
@@ -443,7 +476,8 @@ async def main():
             if result.get("success"):
                 code = result.get("lean_code", "")
                 lines = len(code.strip().splitlines()) if code else 0
-                print(f"  → [{status}] {thm_name}{novel_tag} ({lines} 行 Lean)")
+                llm_c = result.get("llm_calls", "?")
+                print(f"  → [{status}] {thm_name}{novel_tag} ({lines} 行 Lean, LLM={llm_c})")
                 named_theorems.append({
                     "phase": branch["name"],
                     "area": branch["area"],
@@ -461,17 +495,20 @@ async def main():
 
         elapsed = time.time() - t0
         successes = sum(1 for r in phase_results if r.get("success"))
+        phase_llm = sum(r.get("llm_calls", 0) for r in phase_results)
         total_success += successes
         total_tasks += len(branch["tasks"])
+        total_llm_calls += phase_llm
 
         # 分期报告
         print(f"\n  {'─'*50}")
-        print(f"  📊 {branch['name']}报告: {successes}/{len(branch['tasks'])} ({100*successes//len(branch['tasks'])}%) | {elapsed:.0f}s")
+        print(f"  📊 {branch['name']}报告: {successes}/{len(branch['tasks'])} ({100*successes//len(branch['tasks'])}%) | {elapsed:.0f}s | LLM调用={phase_llm}")
         for i, (task, result) in enumerate(zip(branch["tasks"], phase_results), 1):
             s = "✓" if result.get("success") else "✗"
             nm = result.get("theorem_naming", {}).get("theorem_name", "—")
             nv = " 🆕" if result.get("theorem_naming", {}).get("is_novel") else ""
-            print(f"    {i}. [{s}] {nm}{nv}")
+            lc = result.get("llm_calls", "?")
+            print(f"    {i}. [{s}] {nm}{nv} (LLM={lc})")
 
         all_results.append({
             "phase": branch["name"],
@@ -481,9 +518,12 @@ async def main():
             "total": len(branch["tasks"]),
         })
 
-        # 每个分支后触发演化
-        print(f"\n  🔄 触发演化...")
-        await turing.evaluate_and_evolve()
+        # 每个分支后触发反思 (skill 模式用 _reflect, multi 模式用 evaluate_and_evolve)
+        print(f"\n  🔄 触发演化/反思...")
+        if hasattr(turing, 'evaluate_and_evolve'):
+            await turing.evaluate_and_evolve()
+        elif hasattr(turing, '_reflect'):
+            await turing._reflect()
 
     total_elapsed = time.time() - t_start
 
@@ -493,9 +533,12 @@ async def main():
     print(f"\n{'🏆'*35}")
     print(f"\n  📋 全分支数学演化 — 最终报告")
     print(f"  {'='*60}")
+    print(f"  智能体模式: {mode}")
     print(f"  总任务: {total_tasks}")
     print(f"  总成功: {total_success} ({100*total_success//total_tasks}%)")
+    print(f"  总LLM调用: {total_llm_calls} (平均 {total_llm_calls/max(total_tasks,1):.1f}/任务)")
     print(f"  总用时: {total_elapsed:.0f}s ({total_elapsed/60:.1f}min)")
+    print(f"  平均每任务: {total_elapsed/max(total_tasks,1):.1f}s")
     print()
 
     for ar in all_results:
@@ -527,10 +570,14 @@ async def main():
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump({
                 "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "mode": mode,
                 "total_tasks": total_tasks,
                 "total_success": total_success,
                 "success_rate": f"{100*total_success//total_tasks}%",
+                "total_llm_calls": total_llm_calls,
+                "avg_llm_calls_per_task": round(total_llm_calls / max(total_tasks, 1), 2),
                 "total_elapsed_seconds": total_elapsed,
+                "avg_seconds_per_task": round(total_elapsed / max(total_tasks, 1), 1),
                 "branches": [
                     {
                         "name": ar["phase"],

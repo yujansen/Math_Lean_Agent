@@ -1,5 +1,8 @@
 """
-Explorer 智能体 — 在指定数学领域进行探索性搜索，寻找模式与猜想。
+[LEGACY] Explorer 智能体 — 仅在 --mode multi 时使用。
+推荐架构请参见 skill_based_agent.py + turing/skills/。
+
+原功能：在指定数学领域进行探索性搜索，寻找模式与猜想。
 
 当 Turing 进入"探索模式"时被触发。
 """

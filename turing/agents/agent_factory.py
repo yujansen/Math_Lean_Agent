@@ -147,10 +147,10 @@ class AgentFactory:
             report_to=spec.get("report_to", "turing_main"),
         )
 
-        # 如果类型未注册，使用 DynamicAgent
+        # 如果类型未注册，记录警告并返回 None
         if agent_type not in self._registry:
-            from turing.agents.dynamic_agent import DynamicAgent
-            self._registry[agent_type] = DynamicAgent
+            logger.warning(f"未注册的智能体类型: {agent_type}，无法从 spec 创建")
+            return None
 
         return self.create(agent_type, config)
 

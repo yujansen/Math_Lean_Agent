@@ -1,5 +1,8 @@
 """
-Librarian 智能体 — 管理知识库，执行去重、标注、检索优化。
+[LEGACY] Librarian 智能体 — 仅在 --mode multi 时使用。
+推荐架构请参见 skill_based_agent.py + turing/skills/。
+
+原功能：管理知识库，执行去重、标注、检索优化。
 
 当知识库达到一定规模后定期运行。
 """

@@ -1,101 +1,92 @@
 # ============================================================
-#  TURING 数学研究智能体系统配置
+#  Turing — 数学研究智能体系统配置
+#
+#  本文件是系统唯一的配置入口。修改后重启程序即可生效。
+#  所有路径均相对于项目根目录。
 # ============================================================
 
+# ----- 系统基础 -----
 system:
   name: "Turing"
-  version: "1.0.0"
+  version: "2.1.0"                   # v2.1: 技能驱动 + LLM 直接证明快速路径
   log_level: "INFO"                  # DEBUG | INFO | WARNING | ERROR
-  data_dir: "./data"
-  snapshot_dir: "./data/snapshots"
-  max_snapshots: 5
-  backup_interval_hours: 6
+  data_dir: "./data"                 # 数据根目录（日志/快照/数据库）
 
 # ----- LLM 配置 -----
+# 主模型用于证明策略、代码生成等核心推理任务。
+# light_model 用于命名、修复、评估等简单任务（原则 F: 大小模型路由）。
+# 若本地只有一个模型，两者填相同值即可。
 llm:
   provider: "ollama"                 # ollama | openai_compatible
   base_url: "http://localhost:11434"
-  model: "qwen3-coder:30b"
+  model: "qwen3-coder:30b"          # 主推理模型
+  light_model: "qwen3-coder:30b"    # 轻量模型（命名/修复/评估）
   temperature: 0.7
   max_tokens: 8192
-  timeout: 120                       # 秒
-  # 轻量模型用于简单任务
-  light_model: "qwen3-coder:30b"
-  # 外部 LLM 备用
+  timeout: 120                       # 单次 LLM 请求超时（秒）
+  # 外部 LLM 备用（当本地模型返回低质量结果时使用）
   external_llm:
     enabled: false
     provider: "openai"
-    api_key: ""
+    api_key: ""                      # 通过环境变量 OPENAI_API_KEY 设置更安全
     model: "gpt-4"
     base_url: "https://api.openai.com/v1"
 
 # ----- Lean 4 配置 -----
+# Mathlib 首次导入约需 2-5 分钟，compile_timeout 建议 ≥ 300。
 lean:
-  executable: "lean"                 # lean 可执行文件路径
-  lake_executable: "lake"            # lake 构建工具路径
-  project_dir: "./lean_workspace"    # Lean 项目目录
+  executable: "lean"
+  lake_executable: "lake"
+  project_dir: "./lean_workspace"
   mathlib_available: true
-  compile_timeout: 300                # 秒（Mathlib 导入较慢）
-  max_retries: 5                     # 同一问题最大重试次数
+  compile_timeout: 300               # 秒（含 Mathlib 导入开销）
+  max_retries: 5                     # 同一问题最大编译重试次数
 
-# ----- 记忆系统配置 -----
+# ----- 三层记忆系统 -----
+# Working Memory  — 当前任务的推理步骤（内存，会话级）
+# Long-Term Memory — 定理/策略/错误日志的语义检索（ChromaDB）
+# Persistent Memory — 元认知经验、任务日志、反思记录（SQLite）
 memory:
   working:
-    max_items: 50                    # 工作记忆最大条目数
-    compression_threshold: 40       # 触发压缩的阈值
+    max_items: 50
+    compression_threshold: 40        # 条目数超过此值时触发压缩
 
   long_term:
     chroma_persist_dir: "./data/chroma_db"
     collection_name: "turing_knowledge"
     embedding_model: "all-MiniLM-L6-v2"
-    similarity_threshold: 0.92      # 去重阈值
-    default_top_k: 5
+    similarity_threshold: 0.92       # 知识去重阈值（余弦相似度）
+    default_top_k: 5                 # RAG 检索返回条数
 
   persistent:
     db_path: "./data/turing_persistent.db"
     log_dir: "./data/logs"
 
-# ----- 智能体配置 -----
+# ----- 智能体模式 -----
+# skill: 技能驱动单智能体（推荐，LLM 调用少 ~75%）
+# multi: 多智能体协作（legacy，功能完整但资源消耗更大）
 agents:
-  max_concurrent: 3                  # 最大并行智能体数
-  default_max_iterations: 50
+  mode: "skill"
+  max_concurrent: 3                  # 仅 multi 模式：最大并行子智能体数
   default_timeout_minutes: 30
   default_max_tokens_per_call: 8192
 
 # ----- 资源管理 -----
+# 资源阈值用于动态调整并发策略（仅 multi 模式有效）。
 resources:
-  # 资源阈值
-  gpu_high: 16          # GB - 资源充足
-  gpu_medium: 8         # GB - 资源中等
-  ram_high: 32          # GB
-  ram_medium: 16        # GB
-  check_interval: 30    # 秒 - 资源检测间隔
+  gpu_high: 16                       # GB — 可并行运行多个子智能体
+  gpu_medium: 8                      # GB — 串行运行，队列化编译
+  ram_high: 32
+  ram_medium: 16
+  check_interval: 30                 # 秒 — 资源检测间隔
 
 # ----- 自我演化 -----
 evolution:
-  reflection_task_interval: 20       # 每N个任务反思一次
-  reflection_time_interval: 24       # 每N小时反思一次
-  priority_increment: 0.1            # 成功时优先级增量
-  priority_decrement: 0.1            # 失败时优先级减量
-  priority_max: 1.0
-  priority_min: 0.0
-
-# ----- 训练配置 -----
-training:
-  growth_zone_ratio: 0.7             # 70% 成长区
-  weakness_ratio: 0.2                # 20% 薄弱区
-  exploration_ratio: 0.1             # 10% 随机探索
-  initial_skill_level: 1             # 初始技能等级(1-10)
+  reflection_task_interval: 20       # 每 N 个任务触发一次阶段性反思
+  reflection_time_interval: 24       # 每 N 小时强制反思一次
 
 # ----- 网络配置 -----
 web:
   enabled: true
   timeout: 30
-  user_agent: "Turing-Math-Agent/1.0"
-  sources:
-    - name: "project_euler"
-      url: "https://projecteuler.net"
-      priority: 3
-    - name: "mathlib_issues"
-      url: "https://github.com/leanprover-community/mathlib4/issues"
-      priority: 1
+  user_agent: "Turing-Math-Agent/2.0"

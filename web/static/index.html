@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Turing — 数学研究智能体</title>
+<style>
+/* ── 基础 ────────────────────────────────────────── */
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #1c2333;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --accent: #58a6ff;
+  --accent2: #388bfd;
+  --green: #3fb950;
+  --red: #f85149;
+  --yellow: #d29922;
+  --purple: #bc8cff;
+  --radius: 8px;
+  --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── 布局 ────────────────────────────────────────── */
+.app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+
+header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+header .badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text2);
+}
+
+header .status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  margin-left: auto;
+  animation: pulse 2s infinite;
+}
+
+header .status-dot.busy { background: var(--yellow); }
+header .status-dot.offline { background: var(--red); animation: none; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* 导航标签 */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+
+.tab {
+  padding: 8px 16px;
+  font-size: 14px;
+  color: var(--text2);
+  cursor: pointer;
+  border: none;
+  background: none;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* 面板 */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── 卡片 ────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-title .icon { font-size: 18px; }
+
+/* ── 证明面板 ────────────────────────────────────── */
+.prove-input {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.prove-input textarea {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 12px 16px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 60px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.prove-input textarea:focus {
+  border-color: var(--accent);
+}
+
+.prove-input textarea::placeholder { color: var(--text2); }
+
+.btn {
+  padding: 10px 24px;
+  border-radius: var(--radius);
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--accent2);
+  color: #fff;
+}
+
+.btn-primary:hover { background: var(--accent); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* 快捷示例 */
+.examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.example-btn {
+  padding: 4px 12px;
+  font-size: 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.example-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ── 分屏证明视图 ────────────────────────────────── */
+.proof-split {
+  display: none;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.proof-split.active {
+  display: grid;
+}
+
+.proof-pane {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  min-height: 220px;
+  max-height: 600px;
+  overflow: hidden;
+}
+
+.pane-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--surface2);
+  flex-shrink: 0;
+}
+
+.pane-badge {
+  margin-left: auto;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+.pane-badge.success { background: rgba(63,185,80,0.15); color: var(--green); }
+.pane-badge.failure { background: rgba(248,81,73,0.15); color: var(--red); }
+.pane-badge.pending { background: rgba(88,166,255,0.15); color: var(--accent); }
+
+.pane-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.pane-body .loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 120px;
+  gap: 12px;
+  color: var(--text2);
+  font-size: 13px;
+}
+
+/* LLM 文本渲染 */
+.llm-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.llm-text .code-block {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px;
+  margin: 8px 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* Lean 代码窗格 */
+.lean-pane-code {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* 元数据行 */
+.proof-meta {
+  display: none;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.proof-meta.active { display: flex; }
+
+.result-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.result-badge.success { background: rgba(63,185,80,0.15); color: var(--green); }
+.result-badge.failure { background: rgba(248,81,73,0.15); color: var(--red); }
+
+.spinner {
+  width: 24px; height: 24px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 900px) {
+  .proof-split.active { grid-template-columns: 1fr; }
+}
+
+/* ── 知识库面板 ──────────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: var(--surface2);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+}
+
+.stat-card .value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.stat-card .label {
+  font-size: 12px;
+  color: var(--text2);
+  margin-top: 4px;
+}
+
+/* 定理列表 */
+.theorem-list { list-style: none; }
+
+.theorem-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  transition: background 0.1s;
+}
+
+.theorem-item:hover { background: var(--surface2); }
+
+.theorem-item:last-child { border-bottom: none; }
+
+.theorem-icon {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  background: rgba(88,166,255,0.1);
+  color: var(--accent);
+}
+
+.theorem-info { flex: 1; min-width: 0; }
+
+.theorem-name {
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--mono);
+  color: var(--purple);
+}
+
+.theorem-desc {
+  font-size: 13px;
+  color: var(--text2);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.theorem-tags {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.tag {
+  font-size: 11px;
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text2);
+}
+
+/* 展开的 Lean 代码 */
+.theorem-code {
+  display: none;
+  margin-top: 8px;
+}
+
+.theorem-code.open { display: block; }
+
+.theorem-code pre {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 12px;
+  overflow-x: auto;
+}
+
+/* ── 经验面板 ────────────────────────────────────── */
+.area-chart {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.area-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--surface2);
+  border-radius: var(--radius);
+  font-size: 13px;
+  min-width: 200px;
+  flex: 1;
+}
+
+.area-bar .bar-fill {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--accent);
+  transition: width 0.5s ease;
+}
+
+.area-bar .bar-bg {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.area-bar .area-name {
+  min-width: 80px;
+  font-weight: 500;
+}
+
+.area-bar .area-rate {
+  min-width: 40px;
+  text-align: right;
+  color: var(--text2);
+  font-size: 12px;
+}
+
+/* 反思卡片 */
+.reflection-card {
+  background: var(--surface2);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* 失败模式 */
+.failure-list {
+  list-style: none;
+}
+
+.failure-item {
+  padding: 8px 12px;
+  border-left: 3px solid var(--red);
+  margin-bottom: 8px;
+  font-size: 13px;
+  background: rgba(248,81,73,0.05);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.failure-item .count {
+  color: var(--text2);
+  font-size: 11px;
+}
+
+/* ── 演化面板 ────────────────────────────────────── */
+.evo-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.branch-list {
+  list-style: none;
+}
+
+.branch-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.branch-item:last-child { border-bottom: none; }
+
+.branch-bar-bg {
+  flex: 1;
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.branch-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.branch-rate { min-width: 60px; text-align: right; font-size: 13px; color: var(--text2); }
+
+/* ── 空状态 ──────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--text2);
+}
+
+.empty-state .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.3; }
+.empty-state p { font-size: 14px; }
+
+/* 历史列表 */
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.history-item:last-child { border-bottom: none; }
+
+.history-status {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.history-status.success { background: var(--green); }
+.history-status.failure { background: var(--red); }
+.history-status.partial { background: var(--yellow); }
+
+.history-task {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-meta {
+  color: var(--text2);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* ── 响应式 ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .prove-input { flex-direction: column; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .naming-card { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ──────── Header ──────── -->
+<header>
+  <h1>⚡ Turing</h1>
+  <span class="badge" id="version-badge">v2.0.0</span>
+  <span class="badge" id="model-badge">—</span>
+  <div class="status-dot" id="status-dot" title="系统状态"></div>
+</header>
+
+<!-- ──────── Tabs ──────── -->
+<div class="tabs">
+  <button class="tab active" data-panel="prove">🔬 证明</button>
+  <button class="tab" data-panel="knowledge">📚 知识库</button>
+  <button class="tab" data-panel="experience">🧠 经验</button>
+  <button class="tab" data-panel="evolution">📈 演化</button>
+</div>
+
+<!-- ════════ 证明面板 ════════ -->
+<div class="panel active" id="panel-prove">
+
+  <div class="prove-input">
+    <textarea id="task-input" rows="2"
+      placeholder="输入数学命题，例如：证明 对任意自然数 a 和 b，a + b = b + a"></textarea>
+    <button class="btn btn-primary" id="prove-btn" onclick="submitProof()">证明</button>
+  </div>
+
+  <div class="examples" id="examples">
+    <button class="example-btn" onclick="fillExample(this)">n + 0 = n</button>
+    <button class="example-btn" onclick="fillExample(this)">a + b = b + a</button>
+    <button class="example-btn" onclick="fillExample(this)">¬¬P → P</button>
+    <button class="example-btn" onclick="fillExample(this)">P ∧ Q → Q ∧ P</button>
+    <button class="example-btn" onclick="fillExample(this)">∅ ⊆ S</button>
+    <button class="example-btn" onclick="fillExample(this)">0 ≤ n</button>
+    <button class="example-btn" onclick="fillExample(this)">a * (b + c) = a*b + a*c</button>
+  </div>
+
+  <!-- 分屏视图：左 LLM / 右 Lean 4 -->
+  <div class="proof-split" id="proof-split">
+    <div class="proof-pane">
+      <div class="pane-header">
+        <span>🤖</span> LLM 证明推理
+        <span class="pane-badge" id="llm-badge"></span>
+      </div>
+      <div class="pane-body" id="llm-content"></div>
+    </div>
+    <div class="proof-pane">
+      <div class="pane-header">
+        <span>⚙️</span> Lean 4 形式化验证
+        <span class="pane-badge" id="lean-badge"></span>
+      </div>
+      <div class="pane-body" id="lean-content"></div>
+    </div>
+  </div>
+
+  <!-- 元数据行 -->
+  <div class="proof-meta" id="proof-meta"></div>
+
+  <!-- 历史记录 -->
+  <div class="card" style="margin-top: 8px;">
+    <div class="card-title"><span class="icon">📋</span> 本轮历史</div>
+    <div id="history-list">
+      <div class="empty-state"><p>尚无证明记录</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ 知识库面板 ════════ -->
+<div class="panel" id="panel-knowledge">
+  <div class="stats-grid" id="knowledge-stats"></div>
+  <div class="card">
+    <div class="card-title"><span class="icon">📐</span> 已证明定理</div>
+    <ul class="theorem-list" id="theorem-list">
+      <div class="empty-state"><div class="icon">📐</div><p>知识库为空，开始证明定理以积累知识</p></div>
+    </ul>
+  </div>
+</div>
+
+<!-- ════════ 经验面板 ════════ -->
+<div class="panel" id="panel-experience">
+  <div class="stats-grid" id="exp-stats"></div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">📊</span> 各领域成功率</div>
+    <div class="area-chart" id="area-chart"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">⚠️</span> 常见失败模式</div>
+    <ul class="failure-list" id="failure-list"></ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">💭</span> 最新反思</div>
+    <div id="reflection-content">
+      <div class="empty-state"><p>尚无反思记录</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ 演化面板 ════════ -->
+<div class="panel" id="panel-evolution">
+  <div id="evo-content">
+    <div class="empty-state">
+      <div class="icon">📈</div>
+      <p>尚无演化数据。运行 <code>python run_evolution.py</code> 后刷新。</p>
+    </div>
+  </div>
+</div>
+
+</div><!-- .app -->
+
+<script>
+// ── 全局状态 ─────────────────────────────────────
+const API = '';  // 同源，无需前缀
+let sessionHistory = [];
+
+// ── 标签切换 ─────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.panel).classList.add('active');
+
+    // 切换时刷新数据
+    const panel = tab.dataset.panel;
+    if (panel === 'knowledge') loadKnowledge();
+    else if (panel === 'experience') loadExperience();
+    else if (panel === 'evolution') loadEvolution();
+  });
+});
+
+// ── 快捷示例 ─────────────────────────────────────
+function fillExample(btn) {
+  const text = btn.textContent.trim();
+  document.getElementById('task-input').value = `证明: 对任意相关对象，${text}`;
+  document.getElementById('task-input').focus();
+}
+
+// ── 证明提交 ─────────────────────────────────────
+async function submitProof() {
+  const input = document.getElementById('task-input');
+  const task = input.value.trim();
+  if (!task) return;
+
+  const btn = document.getElementById('prove-btn');
+  btn.disabled = true;
+  initSplitView();
+
+  try {
+    const response = await fetch(API + '/api/prove', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ task }),
+    });
+
+    if (response.status === 429) {
+      showSplitError('已有任务正在执行，请等待...');
+      btn.disabled = false;
+      return;
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      let eventType = '';
+      for (const line of lines) {
+        if (line.startsWith('event: ')) {
+          eventType = line.slice(7).trim();
+        } else if (line.startsWith('data: ') && eventType) {
+          try {
+            const data = JSON.parse(line.slice(6));
+            handleSSE(eventType, data);
+          } catch {}
+          eventType = '';
+        }
+      }
+    }
+  } catch (err) {
+    showSplitError('网络错误: ' + err.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/* ── 分屏视图控制 ─────────────────────────────────── */
+function initSplitView() {
+  const split = document.getElementById('proof-split');
+  const meta = document.getElementById('proof-meta');
+  meta.classList.remove('active');
+  meta.innerHTML = '';
+
+  document.getElementById('llm-content').innerHTML =
+    '<div class="loading"><div class="spinner"></div><span>LLM 正在推理证明...</span></div>';
+  document.getElementById('lean-content').innerHTML =
+    '<div class="loading"><div class="spinner"></div><span>等待 Lean 4 形式化验证...</span></div>';
+
+  document.getElementById('llm-badge').className = 'pane-badge pending';
+  document.getElementById('llm-badge').textContent = '推理中';
+  document.getElementById('lean-badge').className = 'pane-badge pending';
+  document.getElementById('lean-badge').textContent = '等待中';
+
+  split.classList.add('active');
+}
+
+function handleSSE(event, data) {
+  if (event === 'status') {
+    if (data.phase === 'proving') {
+      document.getElementById('llm-badge').textContent = '推理中...';
+    }
+    updateStatusDot(true);
+  } else if (event === 'llm_output') {
+    renderLLMOutput(data.text);
+  } else if (event === 'lean_result') {
+    renderLeanResult(data);
+  } else if (event === 'result') {
+    renderFinalResult(data);
+    addToHistory(data);
+    updateStatusDot(false);
+  } else if (event === 'error') {
+    showSplitError(data.message);
+    updateStatusDot(false);
+  }
+}
+
+function renderLLMOutput(text) {
+  const el = document.getElementById('llm-content');
+  const badge = document.getElementById('llm-badge');
+  el.innerHTML = '<div class="llm-text">' + formatLLMText(text) + '</div>';
+  badge.className = 'pane-badge success';
+  badge.textContent = '完成';
+  // Lean 进入编译阶段
+  document.getElementById('lean-badge').textContent = '编译中...';
+}
+
+function renderLeanResult(data) {
+  const el = document.getElementById('lean-content');
+  const badge = document.getElementById('lean-badge');
+  const ok = data.success;
+
+  badge.className = 'pane-badge ' + (ok ? 'success' : 'failure');
+  badge.textContent = ok ? '✓ 通过' : '✗ 失败';
+
+  let html = '';
+  if (data.code) {
+    html += '<pre class="lean-pane-code">' + escapeHtml(data.code) + '</pre>';
+  }
+  if (data.attempts) {
+    html += '<div style="margin-top:8px;font-size:12px;color:var(--text2)">编译尝试: ' + data.attempts + ' 次</div>';
+  }
+  el.innerHTML = html;
+}
+
+function renderFinalResult(data) {
+  const meta = document.getElementById('proof-meta');
+  const ok = data.success;
+  const naming = data.theorem_naming || {};
+
+  let html =
+    '<span class="result-badge ' + (ok ? 'success' : 'failure') + '">' +
+      (ok ? '✓ 证明成功' : '✗ 证明失败') +
+    '</span>' +
+    '<span style="color:var(--text2)">🤖 LLM: ' + (data.llm_calls || '?') + ' 次</span>' +
+    '<span style="color:var(--text2)">⏱ ' + (data.elapsed_seconds || '?') + 's</span>' +
+    '<span style="color:var(--text2)">🔄 编译: ' + (data.attempts || 0) + ' 次</span>';
+
+  if (naming.theorem_name) {
+    html += '<span style="color:var(--purple);font-family:var(--mono)">' + escapeHtml(naming.theorem_name) + '</span>';
+    if (naming.chinese_name) {
+      html += '<span style="color:var(--text2)">' + escapeHtml(naming.chinese_name) + '</span>';
+    }
+  }
+  if (!ok && (data.error || data.last_error)) {
+    html += '<div style="width:100%;margin-top:8px;padding:8px 12px;background:rgba(248,81,73,0.1);border-radius:6px;color:var(--red);font-size:12px;">' +
+      escapeHtml(data.error || data.last_error) + '</div>';
+  }
+  meta.innerHTML = html;
+  meta.classList.add('active');
+
+  // 如果 llm_output / lean_result 事件未到达，从最终结果中补填
+  const llmEl = document.getElementById('llm-content');
+  if (llmEl.querySelector('.loading')) {
+    const text = data.llm_response || data.natural_language_proof || '';
+    if (text) {
+      renderLLMOutput(text);
+    } else {
+      llmEl.innerHTML = '<div style="color:var(--text2);font-size:13px;">（无详细推理记录）</div>';
+      document.getElementById('llm-badge').className = 'pane-badge';
+      document.getElementById('llm-badge').textContent = '—';
+    }
+  }
+  const leanEl = document.getElementById('lean-content');
+  if (leanEl.querySelector('.loading')) {
+    renderLeanResult({ code: data.lean_code || '', success: data.success, attempts: data.attempts || 0 });
+  }
+}
+
+function formatLLMText(text) {
+  if (!text) return '<span style="color:var(--text2)">（无输出）</span>';
+  const parts = text.split(/(```[\s\S]*?```)/g);
+  return parts.map(function(part) {
+    if (part.startsWith('```')) {
+      const code = part.replace(/^```\w*\n?/, '').replace(/\n?```$/, '');
+      return '<div class="code-block">' + escapeHtml(code) + '</div>';
+    }
+    return escapeHtml(part).replace(/\n/g, '<br>');
+  }).join('');
+}
+
+function showSplitError(msg) {
+  document.getElementById('llm-content').innerHTML =
+    '<div style="color:var(--red);font-size:13px;">❌ ' + escapeHtml(msg) + '</div>';
+  document.getElementById('llm-badge').className = 'pane-badge failure';
+  document.getElementById('llm-badge').textContent = '错误';
+  document.getElementById('lean-content').innerHTML =
+    '<div style="color:var(--text2);font-size:13px;">—</div>';
+  document.getElementById('lean-badge').className = 'pane-badge';
+  document.getElementById('lean-badge').textContent = '—';
+  document.getElementById('proof-split').classList.add('active');
+}
+
+function addToHistory(data) {
+  sessionHistory.unshift(data);
+  renderHistory();
+}
+
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  if (sessionHistory.length === 0) {
+    el.innerHTML = '<div class="empty-state"><p>尚无证明记录</p></div>';
+    return;
+  }
+  el.innerHTML = sessionHistory.map(h => {
+    const status = h.success ? 'success' : 'failure';
+    const task = h.task || '—';
+    const llm = h.llm_calls || '?';
+    const elapsed = h.elapsed_seconds || '?';
+    return `
+      <div class="history-item">
+        <div class="history-status ${status}"></div>
+        <div class="history-task">${escapeHtml(task)}</div>
+        <div class="history-meta">LLM:${llm} | ${elapsed}s</div>
+      </div>`;
+  }).join('');
+}
+
+// ── 知识库 ───────────────────────────────────────
+async function loadKnowledge() {
+  try {
+    const res = await fetch(API + '/api/knowledge');
+    const data = await res.json();
+    renderKnowledgeStats(data.stats);
+    renderTheoremList(data.theorems);
+  } catch (err) {
+    console.error('Knowledge load failed:', err);
+  }
+}
+
+function renderKnowledgeStats(stats) {
+  if (!stats) return;
+  const el = document.getElementById('knowledge-stats');
+  const items = [
+    { value: stats.total || 0, label: '总知识条目' },
+    { value: stats.theorem || 0, label: '定理' },
+    { value: stats.tactic || 0, label: '策略' },
+    { value: stats.error_log || 0, label: '错误日志' },
+    { value: stats.conjecture || 0, label: '猜想' },
+  ];
+  el.innerHTML = items.map(i => `
+    <div class="stat-card">
+      <div class="value">${i.value}</div>
+      <div class="label">${i.label}</div>
+    </div>`).join('');
+}
+
+function renderTheoremList(theorems) {
+  const el = document.getElementById('theorem-list');
+  if (!theorems || theorems.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="icon">📐</div><p>知识库为空</p></div>';
+    return;
+  }
+  el.innerHTML = theorems.map((t, i) => {
+    const name = t.theorem_name || t.id || `theorem_${i}`;
+    const desc = t.natural_language || t.description || '—';
+    const area = t.area || '';
+    const tags = (typeof t.tags === 'string' ? JSON.parse(t.tags || '[]') : t.tags) || [];
+    const code = t.lean_code || '';
+    const source = t.source || '';
+    return `
+      <li class="theorem-item" onclick="toggleCode('tcode-${i}')">
+        <div class="theorem-icon">${source === 'self_proved' ? '✦' : '📖'}</div>
+        <div class="theorem-info">
+          <div class="theorem-name">${escapeHtml(name)}</div>
+          <div class="theorem-desc">${escapeHtml(desc)}</div>
+          <div class="theorem-tags">
+            ${area ? `<span class="tag">${escapeHtml(area)}</span>` : ''}
+            ${tags.slice(0, 3).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
+          </div>
+          <div class="theorem-code" id="tcode-${i}">
+            <pre>${escapeHtml(code)}</pre>
+          </div>
+        </div>
+      </li>`;
+  }).join('');
+}
+
+function toggleCode(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+
+// ── 经验 ─────────────────────────────────────────
+async function loadExperience() {
+  try {
+    const res = await fetch(API + '/api/experience');
+    const data = await res.json();
+    renderExpStats(data.comprehensive);
+    renderAreaChart(data.area_stats);
+    renderFailures(data.comprehensive?.failure_patterns);
+    renderReflection(data.latest_reflection);
+  } catch (err) {
+    console.error('Experience load failed:', err);
+  }
+}
+
+function renderExpStats(stats) {
+  if (!stats) return;
+  const el = document.getElementById('exp-stats');
+  const ts = stats.task_stats || {};
+  const items = [
+    { value: ts.total || stats.total_tasks || 0, label: '总任务数' },
+    { value: ((ts.success_rate || 0) * 100).toFixed(0) + '%', label: '成功率' },
+    { value: stats.total_experiences || 0, label: '积累经验' },
+    { value: stats.total_reflections || 0, label: '反思次数' },
+  ];
+  el.innerHTML = items.map(i => `
+    <div class="stat-card">
+      <div class="value">${i.value}</div>
+      <div class="label">${i.label}</div>
+    </div>`).join('');
+}
+
+function renderAreaChart(areas) {
+  const el = document.getElementById('area-chart');
+  if (!areas || Object.keys(areas).length === 0) {
+    el.innerHTML = '<div class="empty-state"><p>暂无领域数据</p></div>';
+    return;
+  }
+  el.innerHTML = Object.entries(areas).map(([name, s]) => {
+    const rate = ((s.success_rate || 0) * 100).toFixed(0);
+    const color = rate >= 80 ? 'var(--green)' : rate >= 50 ? 'var(--yellow)' : 'var(--red)';
+    return `
+      <div class="area-bar">
+        <span class="area-name">${escapeHtml(name)}</span>
+        <div class="bar-bg"><div class="bar-fill" style="width:${rate}%;background:${color}"></div></div>
+        <span class="area-rate">${rate}% (${s.success||0}/${s.total||0})</span>
+      </div>`;
+  }).join('');
+}
+
+function renderFailures(patterns) {
+  const el = document.getElementById('failure-list');
+  if (!patterns || patterns.length === 0) {
+    el.innerHTML = '<li class="empty-state" style="padding:20px;"><p>暂无失败模式</p></li>';
+    return;
+  }
+  el.innerHTML = patterns.slice(0, 10).map(p => `
+    <li class="failure-item">
+      ${escapeHtml(p.lesson || p.category || '—')}
+      <span class="count"> (${p.count || 1}次)</span>
+    </li>`).join('');
+}
+
+function renderReflection(ref) {
+  const el = document.getElementById('reflection-content');
+  if (!ref) {
+    el.innerHTML = '<div class="empty-state"><p>尚无反思记录</p></div>';
+    return;
+  }
+  const report = ref.reflection_report || '—';
+  const phase = ref.phase || '?';
+  const rate = ((ref.success_rate || 0) * 100).toFixed(0);
+  el.innerHTML = `
+    <div style="display:flex;gap:12px;margin-bottom:8px;font-size:13px;color:var(--text2)">
+      <span>阶段 #${phase}</span>
+      <span>成功率 ${rate}%</span>
+      <span>已证 ${ref.theorems_proved || 0} 定理</span>
+    </div>
+    <div class="reflection-card">${escapeHtml(report)}</div>`;
+}
+
+// ── 演化 ─────────────────────────────────────────
+async function loadEvolution() {
+  try {
+    const res = await fetch(API + '/api/evolution');
+    const data = await res.json();
+    renderEvolution(data);
+  } catch (err) {
+    console.error('Evolution load failed:', err);
+  }
+}
+
+function renderEvolution(resp) {
+  const el = document.getElementById('evo-content');
+  if (!resp.available || !resp.data) {
+    el.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">📈</div>
+        <p>尚无演化数据。运行 <code style="background:var(--surface2);padding:2px 6px;border-radius:4px">python run_evolution.py</code> 后刷新。</p>
+      </div>`;
+    return;
+  }
+
+  const d = resp.data;
+  const successRate = d.success_rate || `${((d.total_success / d.total_tasks) * 100).toFixed(0)}%`;
+  const avgLLM = d.avg_llm_calls_per_task ? d.avg_llm_calls_per_task.toFixed(1) : '?';
+  const elapsed = d.total_elapsed_seconds ? (d.total_elapsed_seconds / 60).toFixed(1) : '?';
+
+  let html = `
+    <div class="evo-summary">
+      <div class="stat-card"><div class="value">${d.total_tasks || 0}</div><div class="label">总任务</div></div>
+      <div class="stat-card"><div class="value" style="color:var(--green)">${successRate}</div><div class="label">成功率</div></div>
+      <div class="stat-card"><div class="value">${avgLLM}</div><div class="label">平均 LLM 调用/任务</div></div>
+      <div class="stat-card"><div class="value">${elapsed}m</div><div class="label">总用时</div></div>
+    </div>`;
+
+  // 分支进度
+  if (d.branches && d.branches.length > 0) {
+    html += '<div class="card"><div class="card-title"><span class="icon">🌿</span> 各分支进度</div><ul class="branch-list">';
+    for (const b of d.branches) {
+      const rate = b.total > 0 ? ((b.success / b.total) * 100) : 0;
+      const color = rate >= 80 ? 'var(--green)' : rate >= 50 ? 'var(--yellow)' : 'var(--red)';
+      html += `
+        <li class="branch-item">
+          <span style="min-width:120px;font-weight:500">${escapeHtml(b.name)}</span>
+          <span style="min-width:60px;color:var(--text2);font-size:12px">${escapeHtml(b.area || '')}</span>
+          <div class="branch-bar-bg"><div class="branch-bar-fill" style="width:${rate}%;background:${color}"></div></div>
+          <span class="branch-rate">${b.success}/${b.total}</span>
+        </li>`;
+    }
+    html += '</ul></div>';
+  }
+
+  // 已命名定理
+  if (d.named_theorems && d.named_theorems.length > 0) {
+    html += `
+      <div class="card">
+        <div class="card-title"><span class="icon">🏆</span> 已命名定理 (${d.named_theorems.length})</div>
+        <ul class="theorem-list">`;
+    for (const [i, t] of d.named_theorems.entries()) {
+      html += `
+        <li class="theorem-item" onclick="toggleCode('evo-code-${i}')">
+          <div class="theorem-icon">${t.is_novel ? '✨' : '📖'}</div>
+          <div class="theorem-info">
+            <div class="theorem-name">${escapeHtml(t.theorem_name || '—')}</div>
+            <div class="theorem-desc">${escapeHtml(t.task || t.description || '')}</div>
+            <div class="theorem-tags">
+              <span class="tag">${escapeHtml(t.area || '')}</span>
+              ${t.is_novel ? '<span class="tag" style="border-color:var(--yellow);color:var(--yellow)">novel</span>' : ''}
+            </div>
+            <div class="theorem-code" id="evo-code-${i}">
+              <pre>${escapeHtml(t.lean_code || '')}</pre>
+            </div>
+          </div>
+        </li>`;
+    }
+    html += '</ul></div>';
+  }
+
+  el.innerHTML = html;
+}
+
+// ── 系统状态轮询 ─────────────────────────────────
+async function pollStatus() {
+  try {
+    const res = await fetch(API + '/api/status');
+    const data = await res.json();
+    document.getElementById('version-badge').textContent = `v${data.system.version}`;
+    document.getElementById('model-badge').textContent = data.system.model || '—';
+    updateStatusDot(data.busy);
+  } catch {
+    document.getElementById('status-dot').className = 'status-dot offline';
+  }
+}
+
+function updateStatusDot(busy) {
+  const dot = document.getElementById('status-dot');
+  dot.className = 'status-dot' + (busy ? ' busy' : '');
+}
+
+// ── 工具 ─────────────────────────────────────────
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ── 键盘快捷键 ──────────────────────────────────
+document.getElementById('task-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+    submitProof();
+  }
+});
+
+// ── 初始化 ──────────────────────────────────────
+pollStatus();
+setInterval(pollStatus, 10000);
+</script>
+</body>
+</html>

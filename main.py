@@ -25,7 +25,19 @@ from loguru import logger
 
 from turing.config import get_config, TuringConfig
 from turing.agents.turing_agent import TuringAgent
+from turing.agents.skill_based_agent import SkillBasedTuringAgent
 from turing.utils import setup_logging
+
+
+def _create_agent(config: TuringConfig, mode_override: str | None = None) -> TuringAgent:
+    """根据配置或命令行参数创建合适的智能体实例。"""
+    mode = mode_override or config.agents.mode
+    if mode == "skill":
+        logger.info("使用技能驱动模式 (skill-based)")
+        return SkillBasedTuringAgent(config)
+    else:
+        logger.info("使用多智能体模式 (multi-agent)")
+        return TuringAgent(config)
 
 
 # ---------- CLI modes -------------------------------------------------------
@@ -162,7 +174,7 @@ async def async_main(args: argparse.Namespace):
         level=config.system.log_level,
     )
 
-    agent = TuringAgent(config)
+    agent = _create_agent(config, mode_override=getattr(args, 'mode', None))
 
     # 注册关闭信号
     loop = asyncio.get_running_loop()
@@ -201,6 +213,8 @@ def main():
     parser.add_argument("--status", "-s", action="store_true", help="显示系统状态并退出")
     parser.add_argument("--loop", "-l", action="store_true", help="进入自主运行循环")
     parser.add_argument("--config", "-c", type=str, default="config.yaml", help="配置文件路径")
+    parser.add_argument("--mode", "-m", choices=["skill", "multi"], default=None,
+                        help="智能体模式: skill(技能驱动,省资源) | multi(多智能体,原模式)")
 
     args = parser.parse_args()
     asyncio.run(async_main(args))

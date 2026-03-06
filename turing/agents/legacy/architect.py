@@ -1,5 +1,8 @@
 """
-Architect 智能体 — 评估并优化整个智能体系统的架构和 Prompt。
+[LEGACY] Architect 智能体 — 仅在 --mode multi 时使用。
+推荐架构请参见 skill_based_agent.py + turing/skills/。
+
+原功能：评估并优化整个智能体系统的架构和 Prompt。
 
 常规在每个反思周期或演化阶段触发。可以提议新智能体、合并/删除子智能体、优化资源分配。
 """
